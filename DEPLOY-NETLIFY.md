@@ -1,6 +1,6 @@
-# Publicação na conta Netlify da Laura
+# Publicação no Netlify
 
-Importar o repositório `lizzygrantlau-lab/axivel-crm`, branch `main`, na equipe da Laura. A configuração é lida de `netlify.toml`:
+Importar o repositório `lizzygrantlau-lab/axivel-crm`, branch `main`, na conta Netlify escolhida pelo responsável (a decisão atual é usar a conta do Gustavo). A configuração é lida de `netlify.toml`:
 
 - Diretório base: raiz do repositório.
 - Build: `node scripts/build-netlify.cjs` (executa os testes antes de preparar a interface).
@@ -16,4 +16,4 @@ As rotas `/api/crm/*` são atendidas pela Function `crm`; a função agendada `p
 
 Após publicar, conferir: acesso bloqueado sem login; Central de Prospecção com 37 empresas ativas; cadastro individual; estado de espera preservado; função agendada habilitada; e commit publicado igual ao commit da branch `main`. Confirmar que uma atualização posterior da branch gera nova publicação automática.
 
-O projeto `axivel-crm` criado anteriormente na equipe Luckmann Advocacia não é o destino desta publicação. Usar a equipe e a conta da Laura. O nome disponível poderá ser, por exemplo, `axivel-crm-laura`.
+O projeto `axivel-crm` criado na equipe Luckmann Advocacia pode ser usado na conta do Gustavo. Antes de publicar, conferir a equipe proprietária e as pessoas com acesso; a Laura precisará ter acesso à equipe ou ao projeto protegido.

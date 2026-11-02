@@ -9,7 +9,7 @@ function createTaskFlow(file, lastStage = 16, now = () => Date.now()) {
  return createTaskState(savedState,lastStage,now,next=>fs.writeFileSync(file,JSON.stringify(next,null,2),'utf8'));
 }
 function createTaskState(initial = {}, lastStage = 16, now = () => Date.now(), save = () => {}) {
- let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null,...initial};
+ let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null,comments:[],prospectTypes:{},...initial};
  function commit(next) { save(next); state=next; }
  function event(type,result,next,owner) {return {id:'FLOW-'+now()+'-'+state.events.length,createdAt:new Date(now()).toISOString(),date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}),type,result,next,owner};}
  function tick() {
@@ -25,7 +25,17 @@ function createTaskState(initial = {}, lastStage = 16, now = () => Date.now(), s
  function update(input) {
   tick();
   let next=state;
-  if (input.action === 'qualifyClient') {
+  if (input.action === 'comment') {
+   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if(typeof input.text!=='string'||!input.text.trim()||input.text.length>5000)throw new Error('Informe um comentário de até 5000 caracteres.');
+   if(!['Laura','Samanta','Ronaldo','IA'].includes(input.owner))throw new Error('Responsável inválido.');
+   const comment={id:'COMMENT-'+now()+'-'+state.comments.length,stage:state.stage,date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}),text:input.text.trim(),owner:input.owner};
+   next={...state,comments:[comment,...state.comments],events:[event('Comentário da tarefa',comment.text,'Acompanhar tarefa',comment.owner),...state.events]};
+  } else if (input.action === 'prospectType') {
+   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if(!['WhatsApp','Instagram','Ligação telefônica','E-mail','Visita presencial'].includes(input.value))throw new Error('Tipo de prospecção inválido.');
+   next={...state,prospectTypes:{...state.prospectTypes,[state.stage]:input.value}};
+  } else if (input.action === 'qualifyClient') {
    if(input.stage!==state.stage || state.stage>4)throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.existingClient!=='boolean')throw new Error('Informe se a empresa já é cliente.');
    next={...state,existingClient:input.existingClient,events:[event('Qualificação da empresa',input.existingClient?'Laura confirmou que a empresa já é cliente.':'Laura confirmou que a empresa ainda não é cliente.','Definir próxima ação','Laura'),...state.events]};

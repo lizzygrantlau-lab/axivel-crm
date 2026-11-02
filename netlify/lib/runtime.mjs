@@ -1,4 +1,5 @@
 import flow from '../../react-app/task-flow.cjs';
+import {isDeepStrictEqual} from 'node:util';
 
 export function runtimeStore({url,key,request=fetch}) {
  if(!url||!key)throw new Error('Conexão online não configurada.');
@@ -16,7 +17,7 @@ export function runtimeStore({url,key,request=fetch}) {
  async function transact(name,transform) {
   for(let attempt=0;attempt<4;attempt++) {
    const row=await read(name);const next=transform(structuredClone(row.valor));
-   if(JSON.stringify(next)===JSON.stringify(row.valor))return next;
+   if(isDeepStrictEqual(next,row.valor))return next;
    const endpoint=new URL(base);endpoint.searchParams.set('chave','eq.'+name);endpoint.searchParams.set('versao','eq.'+row.versao);
    const response=await request(endpoint,{method:'PATCH',headers:{...headers,Prefer:'return=representation'},body:JSON.stringify({valor:next,versao:row.versao+1}),signal:AbortSignal.timeout(12000)});
    if(!response.ok)throw new Error('Falha ao salvar o estado online.');

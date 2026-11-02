@@ -3,11 +3,13 @@ import {runtimeStore} from '../lib/runtime.mjs';
 
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export default async function handler(req) {
+ return handleCrm(req,{url:Netlify.env.get('SUPABASE_URL'),key:Netlify.env.get('SUPABASE_SECRET_KEY')});
+}
+export async function handleCrm(req,credentials) {
  const path=new URL(req.url).pathname;
  const writing=!['GET','HEAD'].includes(req.method);
  if(writing&&(req.headers.get('origin')!==new URL(req.url).origin||!req.headers.get('content-type')?.startsWith('application/json')))return json({error:'Origem inválida.'},403);
  if(!['GET','POST','PUT'].includes(req.method))return json({error:'Método não permitido.'},405);
- const credentials={url:Netlify.env.get('SUPABASE_URL'),key:Netlify.env.get('SUPABASE_SECRET_KEY')};
  try {
   if(path==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(path)) {
    if(req.method!=='GET')return json({error:'Método não permitido.'},405);

@@ -3,7 +3,7 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  if(!url||!key)throw new Error('Conexão com o Supabase não configurada no servidor local.');
  const endpoint=new URL('/rest/v1/leads',url);
  if(endpoint.protocol!=='https:'||!endpoint.hostname.endsWith('.supabase.co'))throw new Error('Endereço do Supabase inválido.');
- endpoint.searchParams.set('select','id,codigo,nome,tipo,segmento,cidade,uf,observacoes,equipe(nome),analises_leads(prioridade,justificativa,fontes,criado_em),historico(tipo,score:dados->score,classe:dados->>classe),tarefas(id,titulo,status,prazo,etapa_codigo,observacoes,equipe(nome))'+(code?',cnpj,telefone,whatsapp,site,instagram,enderecos,atualizado_em':''));
+ endpoint.searchParams.set('select','id,codigo,nome,tipo,segmento,cidade,uf,observacoes,equipe(nome),analises_leads(prioridade,justificativa,fontes,criado_em),historico(tipo,score:dados->score,classe:dados->>classe,dados),tarefas(id,titulo,status,prazo,etapa_codigo,observacoes,equipe(nome))'+(code?',cnpj,telefone,whatsapp,site,instagram,enderecos,atualizado_em':''));
  if(code){if(!/^[A-Za-z0-9_-]{1,100}$/.test(code))throw new Error('Código de empresa inválido.');endpoint.searchParams.set('codigo','eq.'+code);}
  endpoint.searchParams.set('ativo','eq.true');
  endpoint.searchParams.set('order','nome.asc,codigo.asc');
@@ -21,9 +21,10 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  }
  return rows.map(row=>{
   const imported=(row.historico||[]).find(h=>h.tipo==='importacao_prospect_score');
+  const latestFlow=(row.historico||[]).filter(h=>h.tipo==='fluxo_prospeccao'&&Number.isInteger(h.dados?.revision)&&h.dados?.state).sort((a,b)=>b.dados.revision-a.dados.revision)[0]?.dados;
   const analysis=[...(row.analises_leads||[])].sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))[0];
-  return {id:row.codigo||row.id,bancoId:row.id,nome:row.nome,tipo:row.tipo,jaCliente:row.tipo==='cliente'?true:null,segmento:row.segmento||'',cidade:row.cidade||'',uf:row.uf||'',responsavelAtual:row.equipe?.nome||'Não atribuído',score:imported?.score??null,classe:imported?.classe||'',prioridade:analysis?.prioridade||'',analise:analysis?.justificativa||'',observacoes:row.observacoes||'',fontes:(analysis?.fontes||[]).filter(link=>/^https?:\/\//i.test(link)),...(code?{updatedAt:row.atualizado_em,cnpj:row.cnpj||'',telefone:row.telefone||'',whatsapp:row.whatsapp||'',site:row.site||'',instagram:row.instagram||'',enderecos:row.enderecos||[]} :{}),tarefas:(row.tarefas||[]).map(t=>({id:t.id,label:t.titulo,status:t.status,due:t.prazo||'',owner:t.equipe?.nome||'Não atribuído',etapa:t.etapa_codigo,observacoes:t.observacoes||''})).sort((a,b)=>a.etapa-b.etapa)};
- }).sort((a,b)=>(b.score??-1)-(a.score??-1)||a.nome.localeCompare(b.nome,'pt-BR'));
+  return {id:row.codigo||row.id,bancoId:row.id,nome:row.nome,tipo:row.tipo,jaCliente:row.tipo==='cliente'?true:null,segmento:row.segmento||'',cidade:row.cidade||'',uf:row.uf||'',responsavelAtual:row.equipe?.nome||'Não atribuído',score:imported?.score??null,classe:imported?.classe||'',prioridade:analysis?.prioridade||'',analise:analysis?.justificativa||'',observacoes:row.observacoes||'',fontes:(analysis?.fontes||[]).filter(link=>/^https?:\/\//i.test(link)),...(code?{updatedAt:row.atualizado_em,cnpj:row.cnpj||'',telefone:row.telefone||'',whatsapp:row.whatsapp||'',site:row.site||'',instagram:row.instagram||'',enderecos:row.enderecos||[]} :{}),tarefas:(row.tarefas||[]).map(t=>({id:t.id,label:t.titulo,status:t.status,due:t.prazo||'',owner:t.equipe?.nome||'Não atribuído',etapa:t.etapa_codigo,observacoes:t.observacoes||''})).sort((a,b)=>a.etapa-b.etapa),...(latestFlow?{flow:latestFlow.state,flowRevision:latestFlow.revision,tarefas:require('./company-flow.cjs').flowTasks(latestFlow.state)}:{})};
+ }).sort((a,b)=>Number(b.id==='CLI-TESTE')-Number(a.id==='CLI-TESTE')||(b.score??-1)-(a.score??-1)||a.nome.localeCompare(b.nome,'pt-BR'));
 }
 function invalid(message,status=400){const error=new Error(message);error.status=status;return error;}
 function normalizeCnpj(value){
@@ -88,4 +89,50 @@ async function saveProspect({url=process.env.SUPABASE_URL,key=process.env.SUPABA
  const {atualizado_em,...saved}=rows[0];
  return {...saved,updatedAt:atualizado_em};
 }
-module.exports={loadProspects,saveProspect,validateCompanyChanges};
+async function startProspect({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code}={}){
+ if(typeof code!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(code))throw invalid('Código de empresa inválido.');
+ const [company]=await loadProspects({url,key,request,code});
+ if(!code||!company)throw invalid('Empresa não encontrada na lista ativa.',404);
+ if(code==='CLI-0001')throw invalid('Esta empresa já possui um fluxo de prospecção.',409);
+ // IDs estáveis tornam a criação idempotente, inclusive entre computadores.
+ const {createHash}=require('node:crypto');
+ function stableId(kind){const hex=createHash('sha256').update('axivel/'+kind+'/'+company.bancoId).digest('hex');return hex.slice(0,8)+'-'+hex.slice(8,12)+'-5'+hex.slice(13,16)+'-a'+hex.slice(17,20)+'-'+hex.slice(20,32)}
+ const taskId=stableId('inicio-prospeccao');
+ if(company.tarefas.length&&!company.tarefas.some(task=>task.id===taskId))return company;
+ const headers={apikey:key,'Content-Type':'application/json'};
+ if(key.startsWith('eyJ'))headers.Authorization='Bearer '+key;
+ async function call(table,params,options={}){
+  const endpoint=new URL('/rest/v1/'+table,url);
+  for(const [name,value]of Object.entries(params))endpoint.searchParams.set(name,value);
+  const response=await request(endpoint,{...options,headers:{...headers,...options.headers},signal:AbortSignal.timeout(12000)});
+  if(!response.ok)throw new Error('Não foi possível iniciar a prospecção no Supabase. Tente novamente.');
+  return response.json();
+ }
+ const team=await call('equipe',{nome:'eq.Laura',ativo:'eq.true',select:'id'});
+ if(team.length!==1)throw new Error('Responsável Laura não encontrado.');
+ if(!company.tarefas.length)await call('tarefas',{on_conflict:'id'},{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify({id:taskId,lead_id:company.bancoId,etapa_codigo:1,responsavel_id:team[0].id,titulo:'Preparar o tipo de prospecção',status:'em_andamento'})});
+ // Uma nova tentativa recupera também um histórico que tenha falhado após a tarefa.
+ await call('historico',{on_conflict:'id'},{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify({id:stableId('historico-inicio'),lead_id:company.bancoId,autor_id:team[0].id,tipo:'prospeccao_iniciada',descricao:'Prospecção iniciada. Laura deve preparar o tipo de prospecção.',dados:{stage:1,owner:'Laura',next:'Preparar o tipo de prospecção'}})});
+ return (await loadProspects({url,key,request,code}))[0];
+}
+async function saveProspectType({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code,taskId,value}={}){
+ const kinds=['WhatsApp','Instagram','Ligação telefônica','E-mail','Visita presencial'];
+ if(!kinds.includes(value)||typeof taskId!=='string'||!/^[0-9a-f-]{36}$/i.test(taskId)||typeof code!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(code))throw invalid('Tipo de prospecção ou tarefa inválida.');
+ if(code==='CLI-0001')throw invalid('Use o fluxo de tarefas desta empresa.',409);
+ const [company]=await loadProspects({url,key,request,code});
+ const task=company?.tarefas.find(task=>task.id===taskId);
+ if(!task)throw invalid('Tarefa não encontrada nesta empresa.',404);
+ if(task.etapa!==1||task.status!=='em_andamento')throw invalid('A preparação não está mais em andamento. Atualize o cadastro.',409);
+ const endpoint=new URL('/rest/v1/tarefas',url);
+ endpoint.searchParams.set('id','eq.'+taskId);endpoint.searchParams.set('lead_id','eq.'+company.bancoId);endpoint.searchParams.set('status','eq.em_andamento');endpoint.searchParams.set('etapa_codigo','eq.1');
+ // Preservar as demais observações e recusar alterações concorrentes.
+ endpoint.searchParams.set('observacoes',task.observacoes?'eq.'+task.observacoes:'is.null');
+ const notes=task.observacoes.replace(/^Tipo de prospecção: [^\r\n]*(?:\r?\n|$)/m,'');
+ const headers={apikey:key,'Content-Type':'application/json',Prefer:'return=representation'};
+ if(key.startsWith('eyJ'))headers.Authorization='Bearer '+key;
+ const response=await request(endpoint,{method:'PATCH',headers,body:JSON.stringify({observacoes:'Tipo de prospecção: '+value+(notes?'\n'+notes:'')}),signal:AbortSignal.timeout(12000)});
+ if(!response.ok)throw new Error('Não foi possível salvar o tipo de prospecção.');
+ if((await response.json()).length!==1)throw invalid('A tarefa foi alterada em outro dispositivo. Atualize o cadastro.',409);
+ return (await loadProspects({url,key,request,code}))[0];
+}
+module.exports={loadProspects,saveProspect,validateCompanyChanges,startProspect,saveProspectType};

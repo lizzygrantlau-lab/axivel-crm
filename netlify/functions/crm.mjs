@@ -1,3 +1,4 @@
+import companyTasks from '../../react-app/company-flow.cjs';
 import prospects from '../../react-app/supabase-prospects.cjs';
 import {runtimeStore} from '../lib/runtime.mjs';
 
@@ -18,6 +19,25 @@ export async function handleCrm(req,credentials) {
  if(writing&&(req.headers.get('origin')!==new URL(req.url).origin||!req.headers.get('content-type')?.startsWith('application/json')))return json({error:'Origem inválida.'},403);
  if(!['GET','POST','PUT'].includes(req.method))return json({error:'Método não permitido.'},405);
  try {
+  const companyFlowMatch=path.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/tasks$/);
+  if(companyFlowMatch){
+   if(!['GET','PUT'].includes(req.method))return json({error:'Método não permitido.'},405);
+   return json(await companyTasks.companyFlow({...credentials,code:companyFlowMatch[1],input:req.method==='PUT'?await inputJson(req):undefined}));
+  }
+  const typeMatch=path.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/tasks\/([0-9a-f-]{36})\/type$/i);
+  if(typeMatch){
+   if(req.method!=='PUT')return json({error:'Método não permitido.'},405);
+   const input=await inputJson(req);
+   if(Object.keys(input).some(k=>k!=='value'))return json({error:'Dados inválidos.'},400);
+   return json(await prospects.saveProspectType({...credentials,code:typeMatch[1],taskId:typeMatch[2],value:input.value}));
+  }
+  const startMatch=path.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/start$/);
+  if(startMatch){
+   if(req.method!=='POST')return json({error:'Método não permitido.'},405);
+   const input=await inputJson(req);
+   if(Object.keys(input).length)return json({error:'Dados inválidos.'},400);
+   return json(await prospects.startProspect({...credentials,code:startMatch[1]}));
+  }
   if(path==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(path)) {
    const code=path==='/api/crm/prospects'?undefined:path.split('/').pop();
    if(req.method==='PUT'&&code){

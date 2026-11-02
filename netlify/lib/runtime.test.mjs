@@ -19,7 +19,7 @@ test('duas conclusões simultâneas não avançam duas vezes',async()=>{
 test('prazo vencido é persistido uma única vez',async()=>{
  const db=database({stage:3,returnWait:{until:'2026-11-06T02:59:59.999Z',outcome:null},events:[]});
  await Promise.all([db.store.tasks(undefined,()=>Date.parse('2026-11-06T03:00:00Z')),db.store.tasks(undefined,()=>Date.parse('2026-11-06T03:00:00Z'))]);
- assert.equal(db.row().valor.stage,4);assert.equal(db.row().valor.returnWait.outcome,'timeout');assert.equal(db.row().valor.events.length,1);assert.equal(db.writes(),1);
+ assert.equal(db.row().valor.stage,1);assert.equal(db.row().valor.assignedOwner,'Laura');assert.equal(db.row().valor.returnWait.outcome,'timeout');assert.equal(db.row().valor.events.length,1);assert.equal(db.writes(),1);
 });
 test('resposta antecipada sobrevive à próxima verificação do prazo',async()=>{
  const db=database({stage:3,returnWait:{until:'2026-11-06T02:59:59.999Z',outcome:null},events:[]});

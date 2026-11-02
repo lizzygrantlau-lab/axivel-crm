@@ -2,7 +2,8 @@ const http = require('http'); const fs = require('fs'); const path = require('pa
 const root = __dirname; const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.jsx':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
 const envFile=path.join(root,'..','.env.local');
 if(fs.existsSync(envFile))process.loadEnvFile(envFile);
-const {loadProspects,saveProspect}=require('./supabase-prospects.cjs');
+const {loadProspects,saveProspect,startProspect,saveProspectType}=require('./supabase-prospects.cjs');
+const {companyFlow,tickCompanyFlows}=require('./company-flow.cjs');
 const crmRoot=path.join(root,'data','axivel','CRM'); const clientRoot=path.join(crmRoot,'F4 Acessórios - CLI-0001');
 function ensureData(){ const defaults={
  'clientes.json':[{id:'CLI-0001',nome:'F4 Acessórios',segmento:'Bolsas e acessórios',cidade:'Novo Hamburgo',responsavelAtual:'Laura'}],
@@ -12,7 +13,7 @@ function ensureData(){ const defaults={
 ensureData();
 const taskFlow = require('./synced-task-flow.cjs').createSyncedTaskFlow({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SECRET_KEY});
 let checkingTasks=false;
-async function checkTasks(){if(checkingTasks)return;checkingTasks=true;try{await taskFlow.tick()}catch{console.error('Não foi possível sincronizar os prazos com o Supabase.')}finally{checkingTasks=false;}}
+async function checkTasks(){if(checkingTasks)return;checkingTasks=true;try{await taskFlow.tick();await tickCompanyFlows()}catch{console.error('Não foi possível sincronizar os prazos com o Supabase.')}finally{checkingTasks=false;}}
 setInterval(checkTasks,60000).unref();
 checkTasks();
 function sendJson(res,status,data){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
@@ -21,6 +22,27 @@ http.createServer(async(req,res)=>{let p=decodeURIComponent(req.url.split('?')[0
  if(p.startsWith('/api/crm/')){
   const origin=req.headers.origin;
   if(!['127.0.0.1:4173','localhost:4173'].includes(req.headers.host)||(origin&&!['http://127.0.0.1:4173','http://localhost:4173'].includes(origin)))return sendJson(res,403,{error:'Origem inválida.'});
+ }
+ const companyFlowMatch=p.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/tasks$/);
+ if(companyFlowMatch){
+  if(!['GET','PUT'].includes(req.method))return sendJson(res,405,{error:'Método não permitido.'});
+  if(req.method==='PUT'&&!req.headers['content-type']?.startsWith('application/json'))return sendJson(res,400,{error:'Envie os dados como JSON.'});
+  try{return sendJson(res,200,await companyFlow({code:companyFlowMatch[1],input:req.method==='PUT'?await body(req):undefined}));}
+  catch(error){return sendJson(res,error.status||503,{error:error.status?error.message:'Não foi possível salvar a tarefa no Supabase. Tente novamente.'});}
+ }
+ const typeMatch=p.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/tasks\/([0-9a-f-]{36})\/type$/i);
+ if(typeMatch){
+  if(req.method!=='PUT')return sendJson(res,405,{error:'Método não permitido.'});
+  if(!req.headers['content-type']?.startsWith('application/json'))return sendJson(res,400,{error:'Envie os dados como JSON.'});
+  try{const input=await body(req);if(!input||Object.keys(input).some(k=>k!=='value'))return sendJson(res,400,{error:'Dados inválidos.'});return sendJson(res,200,await saveProspectType({code:typeMatch[1],taskId:typeMatch[2],value:input.value}));}
+  catch(error){return sendJson(res,error.status||503,{error:error.status?error.message:'Não foi possível salvar o tipo de prospecção. Tente novamente.'});}
+ }
+ const startMatch=p.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/start$/);
+ if(startMatch){
+  if(req.method!=='POST')return sendJson(res,405,{error:'Método não permitido.'});
+  if(!req.headers['content-type']?.startsWith('application/json'))return sendJson(res,400,{error:'Envie os dados como JSON.'});
+  try{const input=await body(req);if(!input||Array.isArray(input)||typeof input!=='object'||Object.keys(input).length)return sendJson(res,400,{error:'Dados inválidos.'});return sendJson(res,200,await startProspect({code:startMatch[1]}));}
+  catch(error){return sendJson(res,error.status||503,{error:error.status?error.message:'Não foi possível iniciar a prospecção no Supabase. Tente novamente.'});}
  }
  if(p==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(p)){
   // A lista é disponibilizada somente para a página deste servidor em loopback.

@@ -43,3 +43,13 @@ test('comentário inválido e edição de uma etapa antiga não mudam a tarefa',
  await assert.rejects(f.a.update({action:'prospectType',stage:0,value:'Instagram'}));
  assert.equal(f.writes(),writes);
 });
+
+test('a resposta nao cliente fica salva e compartilhada apos avancar de etapa',async()=>{
+ const f=fixture();
+ await f.a.update({action:'qualifyClient',stage:1,existingClient:false});
+ assert.equal((await f.b.tick()).existingClient,false);
+ await f.a.update({action:'advance',stage:1});
+ const saved=await f.b.tick();
+ assert.equal(saved.stage,2);assert.equal(saved.existingClient,false);
+ assert.equal(saved.events.filter(e=>e.type==='Qualificação da empresa').length,1);
+});

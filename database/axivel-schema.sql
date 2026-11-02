@@ -180,7 +180,7 @@ select v.codigo,v.nome,e.id from (values
  (3,'Retorno do cliente','Laura'),
  (4,'Segundo contato','Samanta'),
  (5,'Conversa virtual agendada','Samanta'),
- (6,'Visita física agendada','Ronaldo'),
+ (6,'Agendar visita física','Samanta'),
  (7,'Visita realizada','Ronaldo'),
  (8,'Proposta apresentada','Ronaldo'),
  (9,'Negociação','Ronaldo'),

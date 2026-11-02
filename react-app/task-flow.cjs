@@ -1,12 +1,16 @@
 const fs = require('node:fs');
 function createTaskFlow(file, lastStage = 16, now = () => Date.now()) {
- let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null};
+ let savedState = {};
  if (fs.existsSync(file)) {
   const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (!Array.isArray(saved)) state = {...state,...saved};
+  if (!Array.isArray(saved)) savedState = saved;
   else if (saved.length) throw new Error('Formato de tarefas existente não suportado.');
  }
- function commit(next) { fs.writeFileSync(file, JSON.stringify(next, null, 2), 'utf8'); state=next; }
+ return createTaskState(savedState,lastStage,now,next=>fs.writeFileSync(file,JSON.stringify(next,null,2),'utf8'));
+}
+function createTaskState(initial = {}, lastStage = 16, now = () => Date.now(), save = () => {}) {
+ let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null,...initial};
+ function commit(next) { save(next); state=next; }
  function event(type,result,next,owner) {return {id:'FLOW-'+now()+'-'+state.events.length,createdAt:new Date(now()).toISOString(),date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}),type,result,next,owner};}
  function tick() {
   if (state.stage===3 && state.returnWait && !state.returnWait.outcome && Date.parse(state.returnWait.until)<=now()) {
@@ -53,4 +57,4 @@ function createTaskFlow(file, lastStage = 16, now = () => Date.now()) {
  }
  return {tick, update};
 }
-module.exports = {createTaskFlow};
+module.exports = {createTaskFlow,createTaskState};

@@ -2,6 +2,13 @@ import prospects from '../../react-app/supabase-prospects.cjs';
 import {runtimeStore} from '../lib/runtime.mjs';
 
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+async function inputJson(req,limit=24000){
+ const raw=await req.text();let value;
+ if(raw.length>limit){const error=new Error('Conteúdo muito grande.');error.status=413;throw error;}
+ try{value=JSON.parse(raw)}catch{const error=new Error('JSON inválido.');error.status=400;throw error;}
+ if(!value||typeof value!=='object'||Array.isArray(value)){const error=new Error('Dados inválidos.');error.status=400;throw error;}
+ return value;
+}
 export default async function handler(req) {
  return handleCrm(req,{url:Netlify.env.get('SUPABASE_URL'),key:Netlify.env.get('SUPABASE_SECRET_KEY')});
 }
@@ -12,8 +19,12 @@ export async function handleCrm(req,credentials) {
  if(!['GET','POST','PUT'].includes(req.method))return json({error:'Método não permitido.'},405);
  try {
   if(path==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(path)) {
-   if(req.method!=='GET')return json({error:'Método não permitido.'},405);
    const code=path==='/api/crm/prospects'?undefined:path.split('/').pop();
+   if(req.method==='PUT'&&code){
+    const input=await inputJson(req,262144);
+    return json(await prospects.saveProspect({...credentials,code,changes:input.changes,updatedAt:input.updatedAt}));
+   }
+   if(req.method!=='GET')return json({error:'Método não permitido.'},405);
    const items=await prospects.loadProspects({...credentials,code});
    if(!code)return json(items);
    return items[0]?json(items[0]):json({error:'Empresa não encontrada na lista ativa.'},404);
@@ -22,7 +33,7 @@ export async function handleCrm(req,credentials) {
   if(!match)return json({error:'Rota não encontrada.'},404);
   const store=runtimeStore(credentials),kind=match[1]||'client';
   let input;
-  if(writing){const raw=await req.text();if(raw.length>24000)return json({error:'Conteúdo muito grande.'},413);try{input=JSON.parse(raw)}catch{return json({error:'JSON inválido.'},400)}if(!input||typeof input!=='object'||Array.isArray(input))return json({error:'Dados inválidos.'},400);}
+  if(writing)input=await inputJson(req);
   if(kind==='tasks') {
    if(req.method==='POST')return json({error:'Método não permitido.'},405);
    return json(await store.tasks(input));

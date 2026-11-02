@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {loadProspects}=require('./supabase-prospects.cjs');
+const {loadProspects,saveProspect,validateCompanyChanges}=require('./supabase-prospects.cjs');
 const url='https://example.supabase.co';
 test('conserva score zero, contas separadas, cliente confirmado e fontes seguras sem retornar credenciais',async()=>{
  const key='sb_secret_fixture';
@@ -15,6 +15,30 @@ test('conserva score zero, contas separadas, cliente confirmado e fontes seguras
  assert.equal(rows.length,2);assert.equal(rows[0].jaCliente,null);assert.equal(rows[1].jaCliente,true);
  assert.equal(rows[1].score,0);assert.deepEqual(rows[1].fontes,['https://example.com']);
  assert.ok(!JSON.stringify(rows).includes(key));
+});
+
+test('salva só campos cadastrais da empresa ativa com controle de edição concorrente',async()=>{
+ const saved=await saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'2026-11-02T10:00:00.123456+00:00',changes:{nome:' Empresa B ',cnpj:'08.067.458/0001-70',telefone:''},request:async(endpoint,options)=>{
+  assert.equal(endpoint.searchParams.get('codigo'),'eq.EMPRESA-B');assert.equal(endpoint.searchParams.get('ativo'),'eq.true');
+  assert.equal(endpoint.searchParams.get('atualizado_em'),'eq.2026-11-02T10:00:00.123456+00:00');
+  assert.equal(options.method,'PATCH');assert.equal(options.headers.Prefer,'return=representation');
+  assert.deepEqual(JSON.parse(options.body),{nome:'Empresa B',telefone:'',cnpj:'08067458000170'});
+  return {ok:true,json:async()=>[{nome:'Empresa B',cnpj:'08067458000170',telefone:'',atualizado_em:'2026-11-02T11:00:00+00:00'}]};
+ }});
+ assert.equal(saved.updatedAt,'2026-11-02T11:00:00+00:00');assert.equal(saved.cnpj,'08067458000170');
+});
+test('endereço de cada unidade preserva observações e confiança sem aceitar campos arbitrários',()=>{
+ const unit={unidade:'Filial',cnpj:null,endereco:'Rua A, 10',cidade:'Feliz, RS',tipo:'Loja',confianca:'alta',observacoes:'Confirmar complemento'};
+ assert.deepEqual(validateCompanyChanges({enderecos:[unit]}).enderecos,[unit]);
+ assert.throws(()=>validateCompanyChanges({enderecos:[{...unit,lead_id:'outra'}]}),/Unidade inválida/);
+ assert.throws(()=>validateCompanyChanges({enderecos:[{endereco:''}]}),/endereço/);
+ assert.deepEqual(validateCompanyChanges({enderecos:[]}),{enderecos:[]});
+});
+test('rejeita campos de fluxo, valores inválidos e cadastros desatualizados antes de gravar',async()=>{
+ for(const changes of [{tipo:'cliente'},{score:100},{id:'outro'},{responsavel_id:'outro'},{observacoes:'apagar pesquisa'},{nome:' '},{cnpj:'123'},{uf:'XX'},{telefone:123},{enderecos:'Rua A'}])assert.throws(()=>validateCompanyChanges(changes));
+ await assert.rejects(saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'inválido',changes:{nome:'B'}}),/Atualize/);
+ await assert.rejects(saveProspect({url,key:'fixture',code:'../A',updatedAt:'2026-11-02T00:00:00Z',changes:{nome:'B'}}),/Código/);
+ await assert.rejects(saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'2026-11-02T00:00:00Z',changes:{nome:'B'},request:async()=>({ok:true,json:async()=>[]})}),error=>error.status===409);
 });
 test('pagina bases maiores sem truncar registros',async()=>{
  const offsets=[];

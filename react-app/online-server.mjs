@@ -24,7 +24,8 @@ export function createOnlineServer({credentials,password,username='laura',public
    let pathname=decodeURIComponent(new URL(req.url,origin).pathname);
    if(pathname.startsWith('/api/')) {
     const chunks=[];let bytes=0;
-    for await(const chunk of req){bytes+=chunk.length;if(bytes>24000)return send(413,'Conteúdo muito grande.');chunks.push(chunk);}
+    const limit=pathname.startsWith('/api/crm/prospects/')?262144:24000;
+    for await(const chunk of req){bytes+=chunk.length;if(bytes>limit)return send(413,'Conteúdo muito grande.');chunks.push(chunk);}
     const request=new Request(new URL(req.url,origin),{method:req.method,headers:req.headers,...(['GET','HEAD'].includes(req.method)?{}:{body:Buffer.concat(chunks)})});
     const response=await api(request,credentials);
     res.writeHead(response.status,{...headers,...Object.fromEntries(response.headers)});return res.end(Buffer.from(await response.arrayBuffer()));

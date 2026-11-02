@@ -31,6 +31,7 @@ create table public.leads (
  codigo text unique,
  nome text not null check (btrim(nome) <> ''),
  tipo text not null default 'lead' check (tipo in ('lead','cliente')),
+ cnpj text,
  segmento text,
  cidade text,
  uf text check (uf ~ '^[A-Z]{2}$'),

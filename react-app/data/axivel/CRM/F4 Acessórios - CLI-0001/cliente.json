@@ -1,0 +1,11 @@
+{
+  "id": "CLI-0001",
+  "nome": "F4 Acessórios",
+  "segmento": "Bolsas e acessórios",
+  "cidade": "Novo Hamburgo",
+  "enderecos": ["Pedro Adams Filho, 5130 - Centro", "Bartolomeu de Gusmão, 649 - Canudos"],
+  "telefone": "(51) 3066-4004",
+  "whatsapp": "(51) 99361-1581",
+  "site": "https://f4acessorios.com.br/loja-2/",
+  "responsavelAtual": "Laura"
+}

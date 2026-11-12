@@ -18,11 +18,11 @@ test('conserva score zero, contas separadas, cliente confirmado e fontes seguras
 });
 
 test('salva só campos cadastrais da empresa ativa com controle de edição concorrente',async()=>{
- const saved=await saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'2026-11-02T10:00:00.123456+00:00',changes:{nome:' Empresa B ',cnpj:'08.067.458/0001-70',telefone:''},request:async(endpoint,options)=>{
+ const saved=await saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'2026-11-02T10:00:00.123456+00:00',changes:{nome:' Empresa B ',cnpj:'08.067.458/0001-70',telefone:'',produtos_publico:'Bolsas para mulheres',perfil_produtos:'Casual, faixa média',vende_bolsas_mochilas:'Sim'},request:async(endpoint,options)=>{
   assert.equal(endpoint.searchParams.get('codigo'),'eq.EMPRESA-B');assert.equal(endpoint.searchParams.get('ativo'),'eq.true');
   assert.equal(endpoint.searchParams.get('atualizado_em'),'eq.2026-11-02T10:00:00.123456+00:00');
   assert.equal(options.method,'PATCH');assert.equal(options.headers.Prefer,'return=representation');
-  assert.deepEqual(JSON.parse(options.body),{nome:'Empresa B',telefone:'',cnpj:'08067458000170'});
+  assert.deepEqual(JSON.parse(options.body),{nome:'Empresa B',telefone:'',cnpj:'08067458000170',produtos_publico:'Bolsas para mulheres',perfil_produtos:'Casual, faixa média',vende_bolsas_mochilas:'Sim'});
   return {ok:true,json:async()=>[{nome:'Empresa B',cnpj:'08067458000170',telefone:'',atualizado_em:'2026-11-02T11:00:00+00:00'}]};
  }});
  assert.equal(saved.updatedAt,'2026-11-02T11:00:00+00:00');assert.equal(saved.cnpj,'08067458000170');

@@ -8,7 +8,7 @@ function initialFlow(company){
  if(!task){const error=new Error('Inicie a prospecção desta empresa antes de abrir a tarefa.');error.status=409;throw error}
  const kind=task.observacoes?.match(/^Tipo de prospecção: ([^\r\n]*)/m)?.[1];
  const stage=Number(task.etapa);
- return createTaskState({stage,assignedOwner:task.owner,existingClient:company.jaCliente===true?true:null,prospectTypes:kind?{[stage]:kind}:{}},15).tick();
+ return createTaskState({stage,assignedOwner:task.owner,existingClient:company.jaCliente===true?true:'pendente',qualificationStatus:company.jaCliente===true?'cliente':'pendente',prospectTypes:kind?{[stage]:kind}:{}},15).tick();
 }
 async function companyFlow({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code,input,now=()=>Date.now()}={}){
  if(typeof code!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(code)||code==='CLI-0001'){const e=new Error('Empresa inválida para este fluxo.');e.status=400;throw e}

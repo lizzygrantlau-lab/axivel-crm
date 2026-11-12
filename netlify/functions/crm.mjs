@@ -87,7 +87,7 @@ export async function handleCrm(req,credentials) {
    return json({error:'Atualize a página para salvar o acompanhamento.'},409);
   }
   if(kind==='client'&&req.method==='PUT') {
-   const allowed=['nome','segmento','cidade','telefone','whatsapp','site','instagram','responsavelAtual'];
+   const allowed=['nome','segmento','cidade','telefone','whatsapp','site','instagram','produtosPublico','perfilProdutos','vendeBolsasMochilas','responsavelAtual'];
    if(Object.keys(input).some(k=>!allowed.includes(k)&&!['id','enderecos'].includes(k))||allowed.some(k=>input[k]!==undefined&&(typeof input[k]!=='string'||input[k].length>5000)))return json({error:'Cadastro inválido.'},400);
    if(input.enderecos!==undefined&&(!Array.isArray(input.enderecos)||input.enderecos.some(a=>typeof a!=='string'||a.length>5000)))return json({error:'Endereços inválidos.'},400);
    return json(await store.transact(name,current=>({...current,...input,id:'CLI-0001'})));

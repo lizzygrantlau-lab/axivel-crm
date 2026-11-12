@@ -9,7 +9,7 @@ function createTaskFlow(file, lastStage = 15, now = () => Date.now()) {
  return createTaskState(savedState,lastStage,now,next=>fs.writeFileSync(file,JSON.stringify(next,null,2),'utf8'));
 }
 function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), save = () => {}) {
- let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null,comments:[],contacts:[],prospectTypes:{},...initial};
+ let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null, qualificationStatus:null,comments:[],contacts:[],prospectTypes:{},...initial};
  function commit(next) { save(next); state=next; }
  function channel(stage=state.stage){return state.prospectTypes[stage]||(stage===2?state.prospectTypes[1]:null)||'WhatsApp';}
  function event(type,result,next,owner,prospectType) {return {...(prospectType?{prospectType}:{}),id:'FLOW-'+now()+'-'+state.events.length,stage:state.stage,createdAt:new Date(now()).toISOString(),date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}),type,result,next,owner};}
@@ -65,7 +65,25 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    if(input.requestId)next={...next,processedRequests:[...(next.processedRequests||[]),input.requestId].slice(-200)};
    commit(next);return state;
   }
-  if (input.action === 'comment') {
+  if (input.action === 'approachMessage') {
+   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if(typeof input.text!=='string'||input.text.length>5000)throw new Error('A mensagem deve ter até 5000 caracteres.');
+   next={...state,approachMessage:input.text.trim()};
+  } else if (input.action === 'deleteComment') {
+   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if(typeof input.commentId!=='string'||!input.commentId)throw new Error('Notificação inválida.');
+   const comment=state.comments.find(item=>item.id===input.commentId);
+   if(!comment)throw new Error('Notificação não encontrada.');
+   next={...state,comments:state.comments.filter(item=>item.id!==input.commentId),events:state.events.filter(item=>!(item.type==='Comentário da tarefa'&&item.result===comment.text&&item.owner===comment.owner))};
+  } else if (input.action === 'updateContact') {
+   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   const fields=['name','role','method','number','notes'];
+   if(typeof input.contactId!=='string'||!fields.every(field=>typeof input[field]==='string'))throw new Error('Preencha os dados do contato.');
+   if(!input.name.trim()||!input.method.trim()||!input.number.trim())throw new Error('Informe nome, meio e número ou identificador do contato.');
+   if(input.name.length>200||input.role.length>200||input.method.length>100||input.number.length>200||input.notes.length>2000)throw new Error('Os dados do contato excedem o limite permitido.');
+   if(!state.contacts.some(contact=>contact.id===input.contactId))throw new Error('Contato não encontrado.');
+   next={...state,contacts:state.contacts.map(contact=>contact.id===input.contactId?{...contact,name:input.name.trim(),role:input.role.trim(),method:input.method.trim(),number:input.number.trim(),notes:input.notes.trim(),updatedAt:new Date(now()).toISOString()}:contact)};
+  } else if (input.action === 'comment') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.text!=='string'||!input.text.trim()||input.text.length>5000)throw new Error('Informe um comentário de até 5000 caracteres.');
    if(!['Laura','Samanta','Ronaldo','IA'].includes(input.owner))throw new Error('Responsável inválido.');
@@ -86,8 +104,11 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    next={...state,prospectTypes:{...state.prospectTypes,[state.stage]:input.value}};
   } else if (input.action === 'qualifyClient') {
    if(input.stage!==state.stage || state.stage>4)throw new Error('A etapa mudou. Confira a tarefa atual.');
-   if(typeof input.existingClient!=='boolean')throw new Error('Informe se a empresa já é cliente.');
-   next={...state,existingClient:input.existingClient,events:[event('Qualificação da empresa',input.existingClient?'Laura confirmou que a empresa já é cliente.':'Laura confirmou que a empresa ainda não é cliente.','Definir próxima ação','Laura'),...state.events]};
+   const validStatuses=['cliente','potencial_revendedor','pendente'];
+   const status=typeof input.qualificationStatus==='string'?input.qualificationStatus:input.existingClient===true?'cliente':input.existingClient===false?'potencial_revendedor':null;
+   if(!validStatuses.includes(status))throw new Error('Selecione uma opção de qualificação Axivel.');
+   const labels={cliente:'já é cliente Axivel',potencial_revendedor:'é um potencial revendedor',pendente:'está com a situação pendente'};
+   next={...state,existingClient:typeof input.qualificationStatus==='string'?status:status==='cliente',qualificationStatus:status,events:[event('Qualificação da empresa','Laura registrou que a empresa '+labels[status]+'.','Definir próxima ação','Laura'),...state.events]};
   } else if (input.action === 'completeContact') {
    if(input.stage!==state.stage || state.stage!==1 || (state.returnWait&&!state.returnWait.outcome)) throw new Error('A etapa mudou. Confira a tarefa atual.');
    const date=input.date;
@@ -136,6 +157,12 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    if (!Number.isInteger(input.id) || input.id < state.stage || input.id > lastStage || [1,2].includes(input.id)) throw new Error('O prazo de retorno é definido ao concluir o primeiro contato.');
    if (input.due !== '' && (typeof input.due !== 'string' || !Number.isFinite(Date.parse(input.due)) || Date.parse(input.due) <= now())) throw new Error('Informe uma data futura.');
    next = {...state, deadlines:{...state.deadlines, [input.id]:input.due}};
+  } else if (input.action === 'reopenPrevious') {
+   if(input.stage!==state.stage||state.stage<=1)throw new Error('Não há uma etapa anterior para reabrir.');
+   const previous=state.stage-1;
+   const owner=previous<=2?'Laura':previous<=5?'Samanta':previous<=10?'Ronaldo':'Samanta';
+   const taskStatuses={...state.taskStatuses};delete taskStatuses[state.stage];delete taskStatuses[previous];
+   next={...state,stage:previous,assignedOwner:owner,taskStatuses,events:[event('Etapa reaberta','A etapa anterior foi reaberta para corrigir um avanço feito por engano.','Retomar etapa anterior',owner),...state.events]};
   } else if (input.action === 'advance') {
    if (input.stage !== state.stage) throw new Error('A etapa mudou. Confira a tarefa atual.');
    if (state.stage===2)throw new Error('Registre a resposta do cliente ou prorrogue o prazo de retorno.');

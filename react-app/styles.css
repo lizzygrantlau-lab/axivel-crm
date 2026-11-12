@@ -2,7 +2,46 @@
 :root{--unused:initial}.step-owner{display:block;font-size:9px;color:#61574e;margin-top:3px}.owner-pill{display:inline-block;background:#eadbca;color:#61574e;padding:5px 9px;border-radius:14px;font-size:10px;font-weight:700}.full{width:100%;margin-top:18px;text-align:center}.filters{display:flex;gap:8px}.filters select,.task-due select,.post-card select{border:1px solid var(--line);background:#fff;padding:8px;border-radius:5px;font:11px Montserrat;color:var(--ink)}.task-list{display:grid}.task-row{display:flex;gap:14px;align-items:center;padding:14px 8px;border-bottom:1px solid var(--line)}.task-row.task-current{background:#f5eee5;border-left:3px solid var(--gold);padding-left:5px}.task-icon{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#f1eee9;color:#61574e;font-size:12px}.task-info{flex:1}.task-info strong,.task-info small{display:block}.task-info strong{font-size:12px;color:var(--navy)}.task-info small,.task-due{font-size:10px;color:var(--muted);margin-top:4px}.task-due{min-width:120px}.handoff-box{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:22px;background:var(--cream);padding:16px;border-radius:8px;border-left:3px solid var(--gold)}.handoff-box strong,.handoff-box small{display:block}.handoff-box strong{font-size:12px;color:var(--navy)}.handoff-box small{font-size:10px;color:var(--muted);margin-top:4px}.handoff-box.compact{margin-top:24px}.post-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.post-card{border:1px solid var(--line);border-radius:9px;padding:17px;display:grid;gap:9px}.post-card>span{font-size:9px;letter-spacing:1px;color:var(--gold)}.post-card strong{font:400 18px 'Cinzel Decorative',serif;color:var(--navy)}.post-card small{font-size:10px;color:var(--muted)}.post-card textarea{resize:vertical;min-height:85px;border:1px solid var(--line);border-radius:5px;padding:9px;font:11px Montserrat}.post-card.post-done{border-color:#9fbe9f;background:#f5faf5}.empty-state{text-align:center;padding:55px 20px;color:var(--muted)}.empty-icon{font-size:35px;color:var(--gold)}.empty-state h4{font:400 18px 'Cinzel Decorative',serif;color:var(--navy);margin:12px 0 8px}.empty-state p{font-size:12px}.post-note{margin-top:22px;background:var(--cream);padding:14px;font-size:11px;color:#61574e}.activity-top b{font-size:9px;background:#eadbca;color:#61574e;padding:4px 7px;border-radius:10px}@media(max-width:650px){.filters{display:grid;grid-template-columns:1fr}.task-row{flex-wrap:wrap}.task-due{min-width:100px}.handoff-box{align-items:flex-start;flex-direction:column}.post-grid{grid-template-columns:1fr}}
 
 /* Axivel brand identity: original artwork and palette from the supplied PDF. */
-.sidebar{background:var(--ink);color:var(--cream);border-right:1px solid #393936}
+.sidebar{background:var(--ink);color:var(--cream);border-right:1px solid #393936;position:sticky;top:0;height:100vh;max-height:100vh;overflow-y:auto;overflow-x:hidden;align-self:flex-start;transition:width .2s ease}
+.sidebar::-webkit-scrollbar{width:7px}.sidebar::-webkit-scrollbar-track{background:#232526}.sidebar::-webkit-scrollbar-thumb{background:#5b5147;border-radius:8px}
+.sidebar-top{position:relative}
+.sidebar-top{order:1}.sidebar nav{order:2}.sidebar .tagline{order:3}.sidebar .sidebar-footer{order:4}
+.sidebar-toggle{position:absolute;right:-13px;top:4px;width:27px;height:27px;border:1px solid var(--gold);border-radius:50%;background:var(--ink);color:var(--gold);font-size:18px;line-height:1;cursor:pointer;z-index:2}
+.sidebar-toggle:hover{background:var(--gold);color:var(--ink)}
+.sidebar nav button b{font-weight:500}
+.sidebar-collapsed{width:84px;padding-left:14px;padding-right:14px}
+.sidebar-collapsed .brand{padding:10px 6px}
+.sidebar-collapsed .brand-logo{width:52px}
+.sidebar-collapsed .brand-sub,.sidebar-collapsed .tagline,.sidebar-collapsed .sidebar-footer b,.sidebar-collapsed .app-version{display:none}
+.sidebar-collapsed nav button{padding:13px 0;text-align:center}
+.sidebar-collapsed nav button span{width:auto}
+.sidebar-collapsed nav button b{display:none}
+.sidebar-collapsed .sidebar-footer{justify-content:center}
+.approach-message{background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:18px;margin:20px 0}
+.approach-message label{display:block;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:9px}
+.approach-message textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:6px;padding:12px;font:12px/1.5 Montserrat;color:var(--ink);background:#fff}
+.approach-message textarea:focus{outline:2px solid #b8987344;border-color:var(--gold)}
+.approach-message-actions{display:flex;align-items:center;gap:12px;margin-top:10px}
+.approach-message-actions small{font-size:11px;color:var(--muted)}
+.qualification-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qualification-ask{color:var(--muted);text-decoration:none}
+.qualification-ask:hover{color:var(--ink);background:transparent}
+.approach-note-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.delete-note{border:0;background:transparent;color:#9a5b52;font-size:10px;text-decoration:underline;cursor:pointer;padding:2px 0}
+.delete-note:hover{color:#6f2f28}
+.contact-editor{margin:20px 0;padding:16px;background:var(--cream);border:1px solid var(--line);border-radius:8px}
+.contact-editor h3{font:400 16px 'Cinzel Decorative',serif;color:var(--navy);margin:0 0 12px}
+.contact-editor-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.contact-editor-row strong,.contact-editor-row span{display:block}.contact-editor-row strong{font-size:12px}.contact-editor-row span{font-size:10px;color:var(--muted);margin-top:4px}
+.contact-edit-form{display:grid;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.contact-edit-form label{display:grid;gap:5px;font-size:11px;font-weight:600}.contact-edit-form input,.contact-edit-form select,.contact-edit-form textarea{border:1px solid var(--line);border-radius:5px;padding:9px;background:#fff;font:11px Montserrat;color:var(--ink)}
+.contact-edit-actions{display:flex;gap:8px;flex-wrap:wrap}
+.reopen-previous{margin-top:14px}
+.approach-task{position:relative}
+.approach-task .contact-editor .reopen-previous{position:absolute;left:12px;bottom:24px;margin:0}
+.approach-finish .primary,.approach-finish .secondary,.approach-task .reopen-previous{height:40px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.approach-task>.return-contacts{display:none}
+.approach-task .approach-contact-box .approach-contact-list{display:none}
 .brand{flex-direction:column;gap:12px;align-items:center;padding:18px;background:var(--cream);border-radius:8px}
 .brand-logo{display:block;width:158px;max-width:100%;height:auto}
 .brand-sub{font:400 8px/1.7 Montserrat,Arial,sans-serif;letter-spacing:2px;color:var(--muted);text-align:center}

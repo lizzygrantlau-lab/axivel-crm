@@ -56,6 +56,15 @@ test('Laura records existing client qualification persistently without inventing
  assert.equal(f.flow.tick().events[0].type,'Qualificação da empresa');
 });
 
+test('qualificacao Axivel aceita cliente, potencial revendedor e situacao pendente',t=>{
+ const f=fixture(t);
+ for(const status of ['cliente','potencial_revendedor','pendente']){
+  const state=f.flow.update({action:'qualifyClient',stage:1,qualificationStatus:status});
+  assert.equal(state.qualificationStatus,status);
+  assert.equal(state.existingClient,status);
+ }
+});
+
 test('history preserves the prospecting channel used for each comment and completion',t=>{
  const f=fixture(t,{stage:4,prospectTypes:{4:'Ligação telefônica'},assignedOwner:'Samanta'});
  f.flow.update({action:'comment',stage:4,text:'O cliente respondeu que vai atender',owner:'Samanta'});

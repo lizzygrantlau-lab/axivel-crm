@@ -4,13 +4,7 @@ const envFile=path.join(root,'..','.env.local');
 if(fs.existsSync(envFile))process.loadEnvFile(envFile);
 const {loadProspects,saveProspect,startProspect,saveProspectType}=require('./supabase-prospects.cjs');
 const {companyFlow,tickCompanyFlows}=require('./company-flow.cjs');
-const crmRoot=path.join(root,'data','axivel','CRM'); const clientRoot=path.join(crmRoot,'F4 Acessórios - CLI-0001');
-function ensureData(){ const defaults={
- 'clientes.json':[{id:'CLI-0001',nome:'F4 Acessórios',segmento:'Bolsas e acessórios',cidade:'Novo Hamburgo',responsavelAtual:'Laura'}],
- 'cliente.json':{id:'CLI-0001',nome:'F4 Acessórios',segmento:'Bolsas e acessórios',cidade:'Novo Hamburgo',enderecos:['Pedro Adams Filho, 5130 - Centro','Bartolomeu de Gusmão, 649 - Canudos'],telefone:'(51) 3066-4004',whatsapp:'(51) 99361-1581',site:'https://f4acessorios.com.br/loja-2/',responsavelAtual:'Laura'},
- 'atividades.json':[], 'tarefas.json':[], 'pos-venda.json':[]};
- for(const [name,data] of Object.entries(defaults)){const file=path.join(name==='clientes.json'?crmRoot:clientRoot,name);if(!fs.existsSync(file))fs.writeFileSync(file,JSON.stringify(data,null,2),'utf8');}}
-ensureData();
+const onlineCrm=import('../netlify/functions/crm.mjs');
 const taskFlow = require('./synced-task-flow.cjs').createSyncedTaskFlow({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SECRET_KEY});
 let checkingTasks=false;
 async function checkTasks(){if(checkingTasks)return;checkingTasks=true;try{await taskFlow.tick();await tickCompanyFlows()}catch{console.error('Não foi possível sincronizar os prazos com o Supabase.')}finally{checkingTasks=false;}}
@@ -67,13 +61,17 @@ http.createServer(async(req,res)=>{let p=decodeURIComponent(req.url.split('?')[0
   catch{res.writeHead(503,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});return res.end(JSON.stringify({error:'Não foi possível carregar a base do Supabase. Verifique a conexão do servidor e tente novamente.'}));}
  }
  if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
- if(p==='/api/crm/client/CLI-0001'&&req.method==='GET'){return sendJson(res,200,JSON.parse(fs.readFileSync(path.join(clientRoot,'cliente.json'))));}
- if(p==='/api/crm/client/CLI-0001/activities'&&req.method==='GET'){return sendJson(res,200,JSON.parse(fs.readFileSync(path.join(clientRoot,'atividades.json'))));}
- if(p==='/api/crm/client/CLI-0001/activities'&&req.method==='POST'){const item=await body(req);const file=path.join(clientRoot,'atividades.json');const list=JSON.parse(fs.readFileSync(file));list.unshift({...item,id:'ACT-'+Date.now(),createdAt:new Date().toISOString()});fs.writeFileSync(file,JSON.stringify(list,null,2));return sendJson(res,201,list[0]);}
- if(p==='/api/crm/client/CLI-0001'&&req.method==='PUT'){const item=await body(req);fs.writeFileSync(path.join(clientRoot,'cliente.json'),JSON.stringify(item,null,2));return sendJson(res,200,item);}
  if(p==='/api/crm/client/CLI-0001/tasks'&&req.method==='GET'){try{return sendJson(res,200,await taskFlow.tick())}catch{return sendJson(res,503,{error:'Não foi possível sincronizar as tarefas com o Supabase. Verifique a conexão e tente novamente.'})}}
  if(p==='/api/crm/client/CLI-0001/tasks'&&req.method==='PUT'){try{return sendJson(res,200,await taskFlow.update(await body(req)))}catch(error){return sendJson(res,error.status||503,{error:error.status?error.message:'Não foi possível salvar a tarefa no Supabase. Verifique a conexão e tente novamente.'})}}
- if(p==='/api/crm/client/CLI-0001/post-sale'&&req.method==='GET'){return sendJson(res,200,JSON.parse(fs.readFileSync(path.join(clientRoot,'pos-venda.json'))));}
- if(p==='/api/crm/client/CLI-0001/post-sale'&&req.method==='PUT'){const item=await body(req);fs.writeFileSync(path.join(clientRoot,'pos-venda.json'),JSON.stringify(item,null,2));return sendJson(res,200,item);}
+ if(/^\/api\/crm\/client\/CLI-0001(?:\/(?:activities|post-sale))?$/.test(p)){
+  try{
+   const origin=`http://${req.headers.host}`;
+   const headers={...req.headers,origin:req.headers.origin||origin};
+   const input=['GET','HEAD'].includes(req.method)?undefined:JSON.stringify(await body(req));
+   const request=new Request(new URL(req.url,origin),{method:req.method,headers,...(input===undefined?{}:{body:input})});
+   const response=await (await onlineCrm).handleCrm(request,{url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SECRET_KEY});
+   res.writeHead(response.status,Object.fromEntries(response.headers));return res.end(await response.text());
+  }catch(error){return sendJson(res,error.status||503,{error:'Não foi possível acessar os dados no Supabase.'});}
+ }
  if(p==='/'){p='/index.html';} const file=path.join(root,p);if(!file.startsWith(root+path.sep)||p.split(/[\\/]/).some(part=>part.startsWith('.'))||path.extname(file)==='.cjs'){res.writeHead(403);return res.end();}fs.readFile(file,(e,d)=>{if(e){res.writeHead(404);return res.end('Not found')}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});res.end(d)});
 }).listen(4173,'127.0.0.1',()=>console.log('Axivel React local server: http://127.0.0.1:4173'));

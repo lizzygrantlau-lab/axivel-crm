@@ -67,9 +67,24 @@ export async function handleCrm(req,credentials) {
    await store.transact(name,list=>[item,...list]);return json(item,201);
   }
   if(kind==='post-sale'&&req.method==='PUT') {
-   const item=Object.fromEntries(['d7','d30','d90'].map(k=>[k,input[k]]));
-   if(Object.values(item).some(v=>typeof v!=='string'||v.length>100))return json({error:'Pós-venda inválido.'},400);
-   return json(await store.transact(name,()=>item));
+   if(input.action){
+    if(input.action==='confirmDelivery')return json(await store.transact(name,current=>({...(!Array.isArray(current)?current:{}),deliveryConfirmed:true})));
+    if(input.action==='create')return json(await store.transact(name,current=>{
+     const value=Array.isArray(current)?{}:current;
+     if(!value.deliveryConfirmed){const error=new Error('Confirme a entrega antes de criar os acompanhamentos.');error.status=409;throw error;}
+     return value.d7?value:{...value,d7:'Pendente',d30:'Pendente',d90:'Pendente',notes:{}};
+    }));
+    if(input.action==='save'){
+     const {period,status,note,expected}=input;
+     if(!['d7','d30','d90'].includes(period)||!['Pendente','Concluído','Requer atenção'].includes(status)||typeof note!=='string'||note.length>5000||!expected||typeof expected.status!=='string'||typeof expected.note!=='string')return json({error:'Acompanhamento inválido.'},400);
+     return json(await store.transact(name,current=>{
+      if(!current||Array.isArray(current)||current[period]!==expected.status||(current.notes?.[period]||'')!==expected.note){const error=new Error('Este acompanhamento foi alterado por outra pessoa. Atualize a tela e tente novamente.');error.status=409;throw error;}
+      return {...current,[period]:status,notes:{...current.notes,[period]:note}};
+     }));
+    }
+    return json({error:'Ação inválida.'},400);
+   }
+   return json({error:'Atualize a página para salvar o acompanhamento.'},409);
   }
   if(kind==='client'&&req.method==='PUT') {
    const allowed=['nome','segmento','cidade','telefone','whatsapp','site','instagram','responsavelAtual'];

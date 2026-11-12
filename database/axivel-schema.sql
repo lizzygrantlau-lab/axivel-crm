@@ -175,22 +175,21 @@ insert into public.equipe(nome,tipo) values ('IA','automacao'),('Laura','pessoa'
 insert into public.etapas_funil(codigo,nome,responsavel_padrao_id)
 select v.codigo,v.nome,e.id from (values
  (0,'Cliente identificado pela IA','IA'),
- (1,'Preparar o tipo de prospecção','Laura'),
- (2,'Primeiro contato enviado','Laura'),
- (3,'Retorno do cliente','Laura'),
- (4,'Segundo contato','Samanta'),
- (5,'Conversa virtual agendada','Samanta'),
- (6,'Agendar visita física','Samanta'),
- (7,'Visita realizada','Ronaldo'),
- (8,'Proposta apresentada','Ronaldo'),
- (9,'Negociação','Ronaldo'),
- (10,'Pedido-teste','Ronaldo'),
- (11,'Venda fechada','Ronaldo'),
- (12,'Pós-venda iniciado','Samanta'),
- (13,'Satisfação após 7 dias','Samanta'),
- (14,'Satisfação após 30 dias','Samanta'),
- (15,'Satisfação após 90 dias','Samanta'),
- (16,'Recompra ou relacionamento contínuo','Samanta')
+ (1,'Preparar a abordagem','Laura'),
+ (2,'Retorno do cliente','Laura'),
+ (3,'Segundo contato','Samanta'),
+ (4,'Conversa virtual agendada','Samanta'),
+ (5,'Agendar visita física','Samanta'),
+ (6,'Visita realizada','Ronaldo'),
+ (7,'Proposta apresentada','Ronaldo'),
+ (8,'Negociação','Ronaldo'),
+ (9,'Pedido-teste','Ronaldo'),
+ (10,'Venda fechada','Ronaldo'),
+ (11,'Pós-venda iniciado','Samanta'),
+ (12,'Satisfação após 7 dias','Samanta'),
+ (13,'Satisfação após 30 dias','Samanta'),
+ (14,'Satisfação após 90 dias','Samanta'),
+ (15,'Recompra ou relacionamento contínuo','Samanta')
 ) as v(codigo,nome,responsavel) join public.equipe e on e.nome=v.responsavel;
 
 comment on table public.leads is 'Cadastro único da loja, preservado ao se tornar cliente.';

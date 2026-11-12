@@ -4,3 +4,5 @@
 node_modules/
 .netlify/
 netlify-public/
+.graphify-venv/
+graphify-out/cache/

@@ -8,7 +8,7 @@ begin
  if not exists(select 1 from pg_tables where schemaname='public' and tablename='axivel_rls_verificacao_transacional' and rowsecurity) then raise exception 'Falha: RLS automatica desativada';end if;
  select count(*) into quantidade from pg_tables where schemaname='public' and tablename in ('equipe','regioes','leads','analises_leads','etapas_funil','prospeccoes','tarefas','historico') and rowsecurity;
  if quantidade<>8 then raise exception 'Falha: RLS deve estar ativa nas oito tabelas'; end if;
- if (select count(*) from public.etapas_funil)<>17 then raise exception 'Falha: faltam etapas';end if;
+ if (select count(*) from public.etapas_funil)<>16 then raise exception 'Falha: faltam etapas';end if;
  if exists(select 1 from pg_tables where schemaname='public' and has_table_privilege('anon',format('%I.%I',schemaname,tablename),'SELECT,INSERT,UPDATE,DELETE')) then raise exception 'Falha: acesso anonimo';end if;
  select id into pessoa from public.equipe where nome='Laura';
  insert into public.leads(nome) values ('TESTE TRANSACIONAL A') returning id into lead_a;

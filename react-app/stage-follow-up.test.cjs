@@ -1,0 +1,6 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {createTaskState}=require('./task-flow.cjs');
+const now=()=>Date.parse('2026-11-12T12:00:00Z');
+test('as fases futuras permitem aguardar sem avançar e mantêm o responsável',()=>{for(const stage of [3,6,7,8,9,10,11,12,13,14,15]){const flow=createTaskState({stage,contacts:[{name:'Ana'}],comments:[{text:'Nota'}]},15,now);const s=flow.update({action:'stageFollowUp',stage,date:'2026-11-15'});assert.equal(s.stage,stage);assert.equal(s.assignedOwner,stage===3||stage>=11?'Samanta':'Ronaldo');assert.equal(s.stageWait.stage,stage);assert.equal(s.taskStatuses[stage],'Aguardando retorno');assert.equal(s.contacts[0].name,'Ana');assert.equal(s.comments[0].text,'Nota');if(stage<15)assert.equal(flow.update({action:'advance',stage}).stage,stage+1);else{const done=flow.update({action:'finishFinalStage',stage});assert.equal(done.taskStatuses[15],'Concluído');assert.throws(()=>flow.update({action:'finishFinalStage',stage}))}}});
+test('não grava espera para outra etapa ou data inválida',()=>{const flow=createTaskState({stage:6},15,now);assert.throws(()=>flow.update({action:'stageFollowUp',stage:7,date:'2026-11-15'}));assert.throws(()=>flow.update({action:'stageFollowUp',stage:6,date:'2026-02-30'}));assert.equal(flow.getState().stage,6)});

@@ -27,7 +27,7 @@ export function runtimeStore({url,key,request=fetch}) {
  }
  async function tasks(input,now=()=>Date.now()) {
   return transact('CLI-0001/tasks',state=>{
-   const engine=flow.createTaskState(state,16,now);
+   const engine=flow.createTaskState(state,15,now);
    try{return input?engine.update(input):engine.tick();}
    catch(error){error.status=409;throw error;}
   });

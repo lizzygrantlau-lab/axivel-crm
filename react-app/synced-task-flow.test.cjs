@@ -48,7 +48,8 @@ test('a resposta nao cliente fica salva e compartilhada apos avancar de etapa',a
  const f=fixture();
  await f.a.update({action:'qualifyClient',stage:1,existingClient:false});
  assert.equal((await f.b.tick()).existingClient,false);
- await f.a.update({action:'advance',stage:1});
+ const future=new Date(Date.now()+86400000*3).toISOString().slice(0,10);
+ await f.a.update({action:'completeContact',stage:1,date:future});
  const saved=await f.b.tick();
  assert.equal(saved.stage,2);assert.equal(saved.existingClient,false);
  assert.equal(saved.events.filter(e=>e.type==='Qualificação da empresa').length,1);

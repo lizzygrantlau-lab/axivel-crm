@@ -138,6 +138,7 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    next = {...state, deadlines:{...state.deadlines, [input.id]:input.due}};
   } else if (input.action === 'advance') {
    if (input.stage !== state.stage) throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if (state.stage===2)throw new Error('Registre a resposta do cliente ou prorrogue o prazo de retorno.');
    if (state.stage===5)throw new Error('Informe a data, o horário e o endereço para encaminhar a visita.');
    if (state.stage===1)throw new Error('Conclua o primeiro contato com uma data de retorno ou registre a resposta do cliente.');
    if(state.stage===1&&state.returnWait?.outcome==='timeout'&&(!state.prospectTypes[1]||state.prospectTypes[1]===state.returnWait.previousChannel))throw new Error('Escolha outro meio de contato. O cliente não respondeu ao contato por '+state.returnWait.previousChannel+'.');

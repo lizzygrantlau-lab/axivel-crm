@@ -1,7 +1,7 @@
 # Graph Report - axivel-crm  (2026-11-12)
 
 ## Corpus Check
-- 36 files · ~10,275 words
+- 36 files · ~10,276 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: .css 2, .example 1, (none) 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `379f8855`
+- Built from commit: `1880ba44`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -47,16 +47,16 @@
 10. `StageTask()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `database()` --calls--> `runtimeStore()`  [EXTRACTED]
+  netlify/lib/runtime.test.mjs → netlify/lib/runtime.mjs
 - `companyFlow()` --calls--> `createTaskState()`  [EXTRACTED]
   react-app/company-flow.cjs → react-app/task-flow.cjs
 - `handler()` --calls--> `runtimeStore()`  [EXTRACTED]
   netlify/functions/prazos.mjs → netlify/lib/runtime.mjs
-- `database()` --calls--> `runtimeStore()`  [EXTRACTED]
-  netlify/lib/runtime.test.mjs → netlify/lib/runtime.mjs
 - `checkTasks()` --calls--> `tickCompanyFlows()`  [EXTRACTED]
   react-app/server.cjs → react-app/company-flow.cjs
-- `fixture()` --calls--> `createTaskFlow()`  [EXTRACTED]
-  react-app/task-flow.test.cjs → react-app/task-flow.cjs
+- `fixture()` --calls--> `createSyncedTaskFlow()`  [EXTRACTED]
+  react-app/synced-task-flow.test.cjs → react-app/synced-task-flow.cjs
 
 ## Import Cycles
 - None detected.

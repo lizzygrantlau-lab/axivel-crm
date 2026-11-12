@@ -57,7 +57,7 @@ test('cadastro consulta somente a empresa solicitada e retorna suas próprias ta
  const rows=await loadProspects({url,key:'fixture',code:'EMPRESA-B',request:async endpoint=>{
   assert.equal(endpoint.searchParams.get('codigo'),'eq.EMPRESA-B');
   assert.ok(endpoint.searchParams.get('select').includes('tarefas('));assert.ok(endpoint.searchParams.get('select').includes(',cnpj,'));
-  return {ok:true,json:async()=>[{id:'b',codigo:'EMPRESA-B',nome:'Empresa B',tipo:'lead',cnpj:'08067458000170',telefone:'1234',enderecos:['Rua B'],tarefas:[{id:'t-b',titulo:'Contato B',status:'pendente',etapa_codigo:2,prazo:'2026-11-10',equipe:{nome:'Samanta'}}]}]};
+  return {ok:true,json:async()=>[{id:'b',codigo:'EMPRESA-B',nome:'Empresa B',tipo:'lead',cnpj:'08067458000170',telefone:'1234',enderecos:['Rua B'],tarefas:[{id:'t-b',titulo:'Contato B',status:'pendente',etapa_codigo:3,prazo:'2026-11-10',equipe:{nome:'Samanta'}}]}]};
  }});
  assert.equal(rows.length,1);assert.equal(rows[0].id,'EMPRESA-B');assert.equal(rows[0].telefone,'1234');assert.equal(rows[0].cnpj,'08067458000170');
  assert.deepEqual(rows[0].enderecos,['Rua B']);assert.equal(rows[0].tarefas[0].id,'t-b');assert.equal(rows[0].tarefas[0].owner,'Samanta');

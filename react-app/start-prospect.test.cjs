@@ -28,7 +28,7 @@ test('inicia na empresa correta, com Laura, e cliques simultâneos não duplicam
  const results=await Promise.all([startProspect(db.options),startProspect(db.options)]);
  assert.equal(db.tasks.size,1);assert.equal(db.history.size,1);
  assert.equal(results[0].tarefas[0].owner,'Laura');assert.equal(results[1].tarefas[0].etapa,1);
- const task=[...db.tasks.values()][0];assert.equal(task.status,'em_andamento');assert.equal(task.titulo,'Preparar o tipo de prospecção');
+ const task=[...db.tasks.values()][0];assert.equal(task.status,'em_andamento');assert.equal(task.titulo,'Preparar a abordagem');
  task.status='concluida';const count=db.writes.filter(w=>w.table==='tarefas').length;
  await startProspect(db.options);
  assert.equal(db.writes.filter(w=>w.table==='tarefas').length,count);assert.equal(task.status,'concluida');

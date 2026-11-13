@@ -38,6 +38,13 @@ export async function handleCrm(req,credentials) {
    if(Object.keys(input).length)return json({error:'Dados inválidos.'},400);
    return json(await prospects.startProspect({...credentials,code:startMatch[1]}));
   }
+  const resetMatch=path.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/reset$/);
+  if(resetMatch){
+   if(req.method!=='POST')return json({error:'Método não permitido.'},405);
+   const input=await inputJson(req);
+   if(Object.keys(input).length)return json({error:'Dados inválidos.'},400);
+   return json(await prospects.resetProspect({...credentials,code:resetMatch[1]}));
+  }
   if(path==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(path)) {
    const code=path==='/api/crm/prospects'?undefined:path.split('/').pop();
    if(req.method==='PUT'&&code){

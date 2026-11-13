@@ -1,17 +1,17 @@
-# Graph Report - axivel.crm  (2026-11-12)
+# Graph Report - axivel-crm  (2026-11-13)
 
 ## Corpus Check
-- 36 files · ~10,866 words
+- 32 files · ~12,084 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: .css 2, .example 1, (none) 1)
 
 ## Summary
-- 285 nodes · 501 edges · 22 communities (13 shown, 9 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 25 edges (avg confidence: 0.85)
+- 302 nodes · 540 edges · 23 communities (15 shown, 8 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 27 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7492f65b`
+- Built from commit: `80d9edc0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -26,30 +26,31 @@
 - services
 - axivel-verificacao.sql
 - netlify-runtime.sql
-- ApproachNotes
-- CompanyProspectTask
-- ResearchNotes
-- ContactEditor
 - CompanyEditForm
+- ResearchNotes
+- ApproachNotes
+- ContactEditor
+- taskStateClass
+- CompanyProspectTask
 - ReturnWaitDialog
-- ClientQualification
+- NewCompanyForm
 - ContactDialog
-- TaskDeadline
 - AGENTS.md
 - DEPLOY-NETLIFY.md
 - EXECUTAR-LOCAL.md
+- TaskDeadline
 
 ## God Nodes (most connected - your core abstractions)
-1. `App()` - 28 edges
+1. `App()` - 31 edges
 2. `createTaskState()` - 17 edges
 3. `runtimeStore()` - 12 edges
-4. `public.leads` - 11 edges
-5. `public.tarefas` - 11 edges
-6. `CompanyProspectTask()` - 11 edges
+4. `public.leads` - 12 edges
+5. `CompanyProspectTask()` - 11 edges
+6. `public.tarefas` - 11 edges
 7. `companyFlow()` - 10 edges
 8. `services` - 10 edges
-9. `ApproachNotes()` - 9 edges
-10. `CompanyRecord()` - 9 edges
+9. `StageTask()` - 9 edges
+10. `ApproachNotes()` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Publicação do Axivel CRM` --references--> `main()`  [INFERRED]
@@ -66,77 +67,85 @@
 ## Import Cycles
 - None detected.
 
-## Communities (22 total, 9 thin omitted)
+## Communities (23 total, 8 thin omitted)
 
 ### Community 0 - "app.jsx"
-Cohesion: 0.14
-Nodes (20): ActivityList(), activityStage(), activityTimestamp(), APP_VERSION, Brand(), ClientCard(), CompanyAddresses(), CompanyContact() (+12 more)
+Cohesion: 0.17
+Nodes (15): ActivityList(), activityStage(), activityTimestamp(), APP_VERSION, Brand(), commercialSituationLabel(), CompanyAddresses(), CompanyContact() (+7 more)
 
 ### Community 1 - "online-server.mjs"
-Cohesion: 0.06
-Nodes (29): config, handleCrm(), handler(), inputJson(), json(), config, handler(), runtimeStore() (+21 more)
+Cohesion: 0.07
+Nodes (27): config, handleCrm(), handler(), inputJson(), json(), config, handler(), runtimeStore() (+19 more)
 
 ### Community 2 - "server.cjs"
-Cohesion: 0.10
-Nodes (21): companyFlow(), tickCompanyFlows(), assert, {test}, checkTasks(), envFile, fs, http (+13 more)
+Cohesion: 0.12
+Nodes (22): companyFlow(), tickCompanyFlows(), checkTasks(), envFile, fs, http, mime, onlineCrm (+14 more)
 
 ### Community 3 - "axivel-schema.sql"
-Cohesion: 0.15
-Nodes (28): analises_avaliador_idx, analises_lead_data_idx, etapas_responsavel_idx, historico_autor_idx, historico_lead_data_idx, leads_cidade_idx, leads_regiao_idx, leads_responsavel_idx (+20 more)
+Cohesion: 0.14
+Nodes (30): analises_avaliador_idx, analises_lead_data_idx, etapas_responsavel_idx, historico_autor_idx, historico_lead_data_idx, leads_cidade_idx, leads_perfil_comercial_historico, leads_regiao_idx (+22 more)
 
 ### Community 4 - "company-flow.cjs"
-Cohesion: 0.12
-Nodes (22): assert, now(), send(), start(), {test}, {createHash}, flowTasks(), initialFlow() (+14 more)
+Cohesion: 0.09
+Nodes (27): assert, now(), send(), start(), {test}, {createHash}, flowTasks(), initialFlow() (+19 more)
 
 ### Community 5 - "task-flow.test.cjs"
 Cohesion: 0.10
-Nodes (17): Publicação do Axivel CRM, createTaskFlow(), fs, assert, fixture(), fs, os, path (+9 more)
+Nodes (16): Publicação do Axivel CRM, createTaskFlow(), assert, fixture(), fs, os, path, {test} (+8 more)
 
 ### Community 6 - "App"
-Cohesion: 0.21
-Nodes (12): App(), addTaskComment(), advance(), applyFlow(), createPostSale(), openCompanyTask(), openTask(), passTo() (+4 more)
+Cohesion: 0.15
+Nodes (15): App(), addTaskComment(), advance(), applyFlow(), createPostSale(), keepCompanyInFocus(), openCompanyTask(), openFocusedTask() (+7 more)
 
 ### Community 7 - "services"
 Cohesion: 0.14
 Nodes (13): key, sync, value, services, branch, buildCommand, envVars, healthCheckPath (+5 more)
 
-### Community 10 - "ApproachNotes"
+### Community 11 - "ResearchNotes"
+Cohesion: 0.36
+Nodes (7): OngoingProspect(), ProspectingCenter(), resetCompany(), selectCategory(), ResearchNotes(), blocks(), clean()
+
+### Community 12 - "ApproachNotes"
 Cohesion: 0.16
 Nodes (8): activityDateLabel(), ApproachCompanyCard(), ApproachMessage(), ApproachNotes(), ApproachTask(), ExtendReturnDialog(), ReturnTask(), StageTask()
-
-### Community 11 - "CompanyProspectTask"
-Cohesion: 0.32
-Nodes (5): CompanyProspectTask(), advance(), apply(), update(), CompanyRecord()
-
-### Community 12 - "ResearchNotes"
-Cohesion: 0.38
-Nodes (5): OngoingProspect(), ProspectingCenter(), ResearchNotes(), blocks(), clean()
 
 ### Community 13 - "ContactEditor"
 Cohesion: 0.40
 Nodes (4): ContactEditor(), cancel(), save(), ReopenPreviousButton()
 
-### Community 15 - "ReturnWaitDialog"
+### Community 14 - "taskStateClass"
+Cohesion: 0.25
+Nodes (7): ApproachMessagePreview(), ClientCard(), Funnel(), Overview(), PostSale(), Tasks(), taskStateClass()
+
+### Community 15 - "CompanyProspectTask"
+Cohesion: 0.60
+Nodes (4): CompanyProspectTask(), advance(), apply(), update()
+
+### Community 16 - "ReturnWaitDialog"
 Cohesion: 0.60
 Nodes (5): ReturnWaitDialog(), submit(), ScheduleWaitDialog(), submit(), suggestedBusinessDate()
 
+### Community 17 - "NewCompanyForm"
+Cohesion: 0.50
+Nodes (3): NewCompanyForm(), payload(), submit()
+
 ## Knowledge Gaps
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `App()` connect `App` to `app.jsx`, `ApproachNotes`, `CompanyProspectTask`, `ResearchNotes`, `ReturnWaitDialog`, `ClientQualification`?**
-  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+- **Why does `App()` connect `App` to `app.jsx`, `CompanyEditForm`, `ResearchNotes`, `ApproachNotes`, `taskStateClass`, `ReturnWaitDialog`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `createTaskState()` (e.g. with `task-flow.cjs` and `tick()`) actually correct?**
   _`createTaskState()` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **Should `app.jsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Why does `createTaskState()` connect `company-flow.cjs` to `online-server.mjs`, `server.cjs`, `task-flow.test.cjs`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Should `online-server.mjs` be split into smaller, more focused modules?**
+  _Cohesion score 0.06717687074829932 - nodes in this community are weakly interconnected._
+- **Why does `createTaskState()` connect `company-flow.cjs` to `server.cjs`, `task-flow.test.cjs`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `runtimeStore()` (e.g. with `read()` and `tasks()`) actually correct?**
   _`runtimeStore()` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **Should `online-server.mjs` be split into smaller, more focused modules?**
-  _Cohesion score 0.06095791001451379 - nodes in this community are weakly interconnected._
+- **Should `server.cjs` be split into smaller, more focused modules?**
+  _Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected._
 - **Why does `runtimeStore()` connect `online-server.mjs` to `company-flow.cjs`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._

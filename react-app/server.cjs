@@ -2,7 +2,7 @@ const http = require('http'); const fs = require('fs'); const path = require('pa
 const root = __dirname; const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.jsx':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
 const envFile=path.join(root,'..','.env.local');
 if(fs.existsSync(envFile))process.loadEnvFile(envFile);
-const {loadProspects,saveProspect,startProspect,saveProspectType}=require('./supabase-prospects.cjs');
+const {loadProspects,saveProspect,startProspect,saveProspectType,createProspect,resetProspect}=require('./supabase-prospects.cjs');
 const {companyFlow,tickCompanyFlows}=require('./company-flow.cjs');
 const onlineCrm=import('../netlify/functions/crm.mjs');
 const taskFlow = require('./synced-task-flow.cjs').createSyncedTaskFlow({url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SECRET_KEY});
@@ -37,6 +37,18 @@ http.createServer(async(req,res)=>{let p=decodeURIComponent(req.url.split('?')[0
   if(!req.headers['content-type']?.startsWith('application/json'))return sendJson(res,400,{error:'Envie os dados como JSON.'});
   try{const input=await body(req);if(!input||Array.isArray(input)||typeof input!=='object'||Object.keys(input).length)return sendJson(res,400,{error:'Dados inválidos.'});return sendJson(res,200,await startProspect({code:startMatch[1]}));}
   catch(error){return sendJson(res,error.status||503,{error:error.status?error.message:'Não foi possível iniciar a prospecção no Supabase. Tente novamente.'});}
+ }
+ const resetMatch=p.match(/^\/api\/crm\/prospects\/([A-Za-z0-9_-]{1,100})\/reset$/);
+ if(resetMatch){
+  if(req.method!=='POST')return sendJson(res,405,{error:'Método não permitido.'});
+  if(!req.headers['content-type']?.startsWith('application/json'))return sendJson(res,400,{error:'Envie os dados como JSON.'});
+  try{const input=await body(req);if(!input||Array.isArray(input)||typeof input!=='object'||Object.keys(input).length)return sendJson(res,400,{error:'Dados inválidos.'});return sendJson(res,200,await resetProspect({code:resetMatch[1]}));}
+  catch(error){return sendJson(res,error.status||503,{error:error.status?error.message:'Não foi possível restaurar a prospecção no Supabase. Tente novamente.'});}
+ }
+ if(p==='/api/crm/prospects'&&req.method==='POST'){
+  if(!req.headers['content-type']?.startsWith('application/json'))return sendJson(res,400,{error:'Envie os dados como JSON.'});
+  try{const input=await body(req);const created=await createProspect({changes:input?.changes,allowDuplicate:input?.allowDuplicate===true});return sendJson(res,201,created);}
+  catch(error){return sendJson(res,error.status||503,{error:error.message||'Não foi possível criar o cadastro no Supabase.',...(error.duplicates?{duplicates:error.duplicates}: {})});}
  }
  if(p==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(p)){
   // A lista é disponibilizada somente para a página deste servidor em loopback.

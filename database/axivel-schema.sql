@@ -41,9 +41,12 @@ create table public.leads (
  whatsapp text,
  site text,
  instagram text,
+ observacoes_contatos text,
  produtos_publico text,
  perfil_produtos text,
  vende_bolsas_mochilas text,
+ situacao_comercial_axivel text not null default 'ainda_nao_cliente' check (situacao_comercial_axivel in ('ja_cliente','ainda_nao_cliente')),
+ perfil_revenda text not null default 'nao_identificado' check (perfil_revenda in ('revendedor_atual','revendedor_potencial','nao_identificado')),
  enderecos jsonb not null default '[]'::jsonb check (jsonb_typeof(enderecos) = 'array'),
  observacoes text,
  ativo boolean not null default true,
@@ -139,6 +142,23 @@ revoke all on function public.axivel_atualizar_timestamp() from public,anon,auth
 create trigger leads_timestamp before update on public.leads for each row execute function public.axivel_atualizar_timestamp();
 create trigger prospeccoes_timestamp before update on public.prospeccoes for each row execute function public.axivel_atualizar_timestamp();
 create trigger tarefas_timestamp before update on public.tarefas for each row execute function public.axivel_atualizar_timestamp();
+
+create function public.axivel_registrar_alteracao_perfil_comercial() returns trigger
+language plpgsql security invoker set search_path = '' as $$
+begin
+ if new.situacao_comercial_axivel is distinct from old.situacao_comercial_axivel then
+  insert into public.historico (lead_id,tipo,descricao,dados)
+  values (new.id,'situacao_comercial_axivel_atualizada','Situação comercial com a AXIVEL atualizada.',jsonb_build_object('anterior',old.situacao_comercial_axivel,'atual',new.situacao_comercial_axivel));
+ end if;
+ if new.perfil_revenda is distinct from old.perfil_revenda then
+  insert into public.historico (lead_id,tipo,descricao,dados)
+  values (new.id,'perfil_revenda_atualizado','Perfil de revenda atualizado.',jsonb_build_object('anterior',old.perfil_revenda,'atual',new.perfil_revenda));
+ end if;
+ return new;
+end;
+$$;
+revoke all on function public.axivel_registrar_alteracao_perfil_comercial() from public,anon,authenticated;
+create trigger leads_perfil_comercial_historico after update on public.leads for each row execute function public.axivel_registrar_alteracao_perfil_comercial();
 
 -- Sem acesso anônimo. Login só terá acesso após vincular auth.users a equipe.user_id.
 -- O cadastro da equipe é administrado pelo painel, nunca pelo navegador do CRM.

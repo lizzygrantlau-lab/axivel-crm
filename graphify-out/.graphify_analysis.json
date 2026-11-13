@@ -1,0 +1,426 @@
+{
+  "communities": {
+    "0": [
+      "react_app_app",
+      "react_app_app_activitydatelabel",
+      "react_app_app_activitylist",
+      "react_app_app_activitystage",
+      "react_app_app_activitytimestamp",
+      "react_app_app_app_version",
+      "react_app_app_approachcompanycard",
+      "react_app_app_approachnotes",
+      "react_app_app_approachnotes_submit",
+      "react_app_app_approachtask",
+      "react_app_app_approachtask_add",
+      "react_app_app_brand",
+      "react_app_app_clientcard",
+      "react_app_app_companyaddresses",
+      "react_app_app_companycontact",
+      "react_app_app_companyeditform",
+      "react_app_app_companyeditform_change",
+      "react_app_app_companyeditform_changeunit",
+      "react_app_app_companyeditform_readable",
+      "react_app_app_companyeditform_submit",
+      "react_app_app_companyprospecttask",
+      "react_app_app_companyprospecttask_advance",
+      "react_app_app_companyprospecttask_apply",
+      "react_app_app_companyprospecttask_sync",
+      "react_app_app_companyprospecttask_update",
+      "react_app_app_companyrecord",
+      "react_app_app_companyrecord_datelabel",
+      "react_app_app_companyrecord_start",
+      "react_app_app_contactdialog",
+      "react_app_app_contactdialog_change",
+      "react_app_app_contactdialog_submit",
+      "react_app_app_contactpanel",
+      "react_app_app_funnel",
+      "react_app_app_history",
+      "react_app_app_initialactivities",
+      "react_app_app_islocalserver",
+      "react_app_app_ongoingprospect",
+      "react_app_app_overview",
+      "react_app_app_people",
+      "react_app_app_postsale",
+      "react_app_app_prospectingcenter",
+      "react_app_app_prospectingcenter_selectcategory",
+      "react_app_app_researchnotes",
+      "react_app_app_researchnotes_addsource",
+      "react_app_app_researchnotes_blocks",
+      "react_app_app_researchnotes_clean",
+      "react_app_app_returnwaitdialog",
+      "react_app_app_returnwaitdialog_submit",
+      "react_app_app_stages",
+      "react_app_app_statuses",
+      "react_app_app_taskdeadline",
+      "react_app_app_taskdeadline_localvalue",
+      "react_app_app_taskdeadline_save",
+      "react_app_app_tasks",
+      "react_app_app_taskstateclass"
+    ],
+    "1": [
+      "netlify_functions_crm",
+      "netlify_functions_crm_config",
+      "netlify_functions_crm_handlecrm",
+      "netlify_functions_crm_handler",
+      "netlify_functions_crm_inputjson",
+      "netlify_functions_crm_json",
+      "netlify_functions_prazos",
+      "netlify_functions_prazos_config",
+      "netlify_functions_prazos_handler",
+      "netlify_lib_runtime",
+      "netlify_lib_runtime_runtimestore",
+      "netlify_lib_runtime_runtimestore_read",
+      "netlify_lib_runtime_runtimestore_tasks",
+      "netlify_lib_runtime_runtimestore_transact",
+      "netlify_lib_runtime_test",
+      "netlify_lib_runtime_test_database",
+      "netlify_tests_crm_test",
+      "react_app_online_server",
+      "react_app_online_server_checkdeadlines",
+      "react_app_online_server_createonlineserver",
+      "react_app_online_server_hash",
+      "react_app_online_server_mime",
+      "react_app_online_server_root",
+      "react_app_online_server_test",
+      "react_app_online_server_test_credentials",
+      "react_app_online_server_test_fixture",
+      "react_app_prospect_type_test",
+      "react_app_prospect_type_test_assert",
+      "react_app_prospect_type_test_fixture",
+      "react_app_prospect_type_test_test",
+      "react_app_start_prospect_test",
+      "react_app_start_prospect_test_assert",
+      "react_app_start_prospect_test_fixture",
+      "react_app_start_prospect_test_fixture_request",
+      "react_app_start_prospect_test_test",
+      "react_app_synced_task_flow",
+      "react_app_synced_task_flow_createsyncedtaskflow",
+      "react_app_synced_task_flow_createsyncedtaskflow_tasks",
+      "react_app_synced_task_flow_test",
+      "react_app_synced_task_flow_test_assert",
+      "react_app_synced_task_flow_test_fixture",
+      "react_app_synced_task_flow_test_test",
+      "ref_node_assert",
+      "ref_node_events",
+      "ref_node_http",
+      "ref_node_test",
+      "ref_node_url"
+    ],
+    "2": [
+      "react_app_company_flow_companyflow",
+      "react_app_company_flow_tickcompanyflows",
+      "react_app_server",
+      "react_app_server_body",
+      "react_app_server_checktasks",
+      "react_app_server_clientroot",
+      "react_app_server_crmroot",
+      "react_app_server_ensuredata",
+      "react_app_server_envfile",
+      "react_app_server_fs",
+      "react_app_server_http",
+      "react_app_server_mime",
+      "react_app_server_path",
+      "react_app_server_sendjson",
+      "react_app_server_taskflow",
+      "react_app_supabase_prospects",
+      "react_app_supabase_prospects_invalid",
+      "react_app_supabase_prospects_loadprospects",
+      "react_app_supabase_prospects_normalizecnpj",
+      "react_app_supabase_prospects_saveprospect",
+      "react_app_supabase_prospects_saveprospecttype",
+      "react_app_supabase_prospects_startprospect",
+      "react_app_supabase_prospects_startprospect_call",
+      "react_app_supabase_prospects_startprospect_stableid",
+      "react_app_supabase_prospects_test",
+      "react_app_supabase_prospects_test_assert",
+      "react_app_supabase_prospects_test_test",
+      "react_app_supabase_prospects_validatecompanychanges",
+      "ref_fs",
+      "ref_http",
+      "ref_node_crypto",
+      "ref_path"
+    ],
+    "3": [
+      "auth_users",
+      "database_axivel_schema",
+      "database_axivel_schema_analises_avaliador_idx",
+      "database_axivel_schema_analises_lead_data_idx",
+      "database_axivel_schema_etapas_responsavel_idx",
+      "database_axivel_schema_historico_autor_idx",
+      "database_axivel_schema_historico_lead_data_idx",
+      "database_axivel_schema_leads_cidade_idx",
+      "database_axivel_schema_leads_regiao_idx",
+      "database_axivel_schema_leads_responsavel_idx",
+      "database_axivel_schema_leads_timestamp",
+      "database_axivel_schema_prospeccoes_lead_idx",
+      "database_axivel_schema_prospeccoes_responsavel_idx",
+      "database_axivel_schema_prospeccoes_retorno_idx",
+      "database_axivel_schema_prospeccoes_timestamp",
+      "database_axivel_schema_public_analises_leads",
+      "database_axivel_schema_public_axivel_atualizar_timestamp",
+      "database_axivel_schema_public_equipe",
+      "database_axivel_schema_public_etapas_funil",
+      "database_axivel_schema_public_historico",
+      "database_axivel_schema_public_leads",
+      "database_axivel_schema_public_prospeccoes",
+      "database_axivel_schema_public_regioes",
+      "database_axivel_schema_public_tarefas",
+      "database_axivel_schema_tarefas_etapa_idx",
+      "database_axivel_schema_tarefas_lead_idx",
+      "database_axivel_schema_tarefas_prazo_idx",
+      "database_axivel_schema_tarefas_prospeccao_idx",
+      "database_axivel_schema_tarefas_responsavel_idx",
+      "database_axivel_schema_tarefas_timestamp"
+    ],
+    "4": [
+      "react_app_approach_flow_test",
+      "react_app_approach_flow_test_assert",
+      "react_app_approach_flow_test_now",
+      "react_app_approach_flow_test_send",
+      "react_app_approach_flow_test_start",
+      "react_app_approach_flow_test_test",
+      "react_app_company_flow",
+      "react_app_company_flow_createhash",
+      "react_app_company_flow_flowtasks",
+      "react_app_company_flow_initialflow",
+      "react_app_company_flow_isdeepstrictequal",
+      "react_app_company_flow_stages",
+      "react_app_company_flow_test",
+      "react_app_company_flow_test_assert",
+      "react_app_company_flow_test_fixture",
+      "react_app_company_flow_test_test",
+      "react_app_task_flow",
+      "react_app_task_flow_createtaskstate",
+      "react_app_task_flow_createtaskstate_channel",
+      "react_app_task_flow_createtaskstate_commit",
+      "react_app_task_flow_createtaskstate_event",
+      "react_app_task_flow_createtaskstate_tick",
+      "react_app_task_flow_createtaskstate_update",
+      "react_app_task_flow_fs",
+      "ref_node_util"
+    ],
+    "5": [
+      "react_app_task_flow_createtaskflow",
+      "react_app_task_flow_test",
+      "react_app_task_flow_test_assert",
+      "react_app_task_flow_test_fixture",
+      "react_app_task_flow_test_fs",
+      "react_app_task_flow_test_os",
+      "react_app_task_flow_test_path",
+      "react_app_task_flow_test_test",
+      "ref_node_fs",
+      "ref_node_os",
+      "ref_node_path",
+      "scripts_build_netlify",
+      "scripts_build_netlify_fs",
+      "scripts_build_netlify_path",
+      "scripts_build_netlify_root",
+      "scripts_build_netlify_target",
+      "scripts_seed_online",
+      "scripts_seed_online_fs",
+      "scripts_seed_online_main",
+      "scripts_seed_online_path",
+      "scripts_seed_online_root"
+    ],
+    "6": [
+      "react_app_app_app",
+      "react_app_app_app_addactivity",
+      "react_app_app_app_addtaskcomment",
+      "react_app_app_app_advance",
+      "react_app_app_app_applyflow",
+      "react_app_app_app_createpostsale",
+      "react_app_app_app_opencompany",
+      "react_app_app_app_opencompanytask",
+      "react_app_app_app_opentask",
+      "react_app_app_app_passto",
+      "react_app_app_app_reopen",
+      "react_app_app_app_savedeadline",
+      "react_app_app_app_sync",
+      "react_app_app_app_updateflow",
+      "react_app_app_clientqualification",
+      "react_app_app_clientqualification_submit"
+    ],
+    "7": [
+      "render",
+      "render_envvars_key",
+      "render_envvars_sync",
+      "render_envvars_value",
+      "render_services",
+      "render_services_branch",
+      "render_services_buildcommand",
+      "render_services_envvars",
+      "render_services_healthcheckpath",
+      "render_services_name",
+      "render_services_plan",
+      "render_services_runtime",
+      "render_services_startcommand",
+      "render_services_type"
+    ],
+    "8": [
+      "database_axivel_verificacao",
+      "database_axivel_verificacao_public_axivel_rls_verificacao_transacional"
+    ],
+    "9": [
+      "database_netlify_runtime",
+      "database_netlify_runtime_public_crm_runtime"
+    ]
+  },
+  "cohesion": {
+    "0": 0.05925925925925926,
+    "1": 0.06845513413506013,
+    "2": 0.10685483870967742,
+    "3": 0.1471264367816092,
+    "4": 0.13333333333333333,
+    "5": 0.10952380952380952,
+    "6": 0.18333333333333332,
+    "7": 0.14285714285714285,
+    "8": 1.0,
+    "9": 1.0
+  },
+  "gods": [
+    {
+      "id": "react_app_app_app",
+      "label": "App()",
+      "degree": 25
+    },
+    {
+      "id": "react_app_task_flow_createtaskstate",
+      "label": "createTaskState()",
+      "degree": 13
+    },
+    {
+      "id": "netlify_lib_runtime_runtimestore",
+      "label": "runtimeStore()",
+      "degree": 12
+    },
+    {
+      "id": "database_axivel_schema_public_leads",
+      "label": "public.leads",
+      "degree": 11
+    },
+    {
+      "id": "database_axivel_schema_public_tarefas",
+      "label": "public.tarefas",
+      "degree": 11
+    },
+    {
+      "id": "react_app_app_companyrecord",
+      "label": "CompanyRecord()",
+      "degree": 10
+    },
+    {
+      "id": "render_services",
+      "label": "services",
+      "degree": 10
+    },
+    {
+      "id": "react_app_app_companyprospecttask",
+      "label": "CompanyProspectTask()",
+      "degree": 9
+    },
+    {
+      "id": "react_app_company_flow_companyflow",
+      "label": "companyFlow()",
+      "degree": 9
+    },
+    {
+      "id": "react_app_app_researchnotes",
+      "label": "ResearchNotes()",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "handler()",
+      "target": "runtimeStore()",
+      "source_files": [
+        "netlify/functions/prazos.mjs",
+        "netlify/lib/runtime.mjs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `handler()` unexpectedly reaches hub `runtimeStore()`"
+    },
+    {
+      "source": "database()",
+      "target": "runtimeStore()",
+      "source_files": [
+        "netlify/lib/runtime.test.mjs",
+        "netlify/lib/runtime.mjs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `database()` unexpectedly reaches hub `runtimeStore()`"
+    },
+    {
+      "source": "companyFlow()",
+      "target": "createTaskState()",
+      "source_files": [
+        "react-app/company-flow.cjs",
+        "react-app/task-flow.cjs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "checkTasks()",
+      "target": "tickCompanyFlows()",
+      "source_files": [
+        "react-app/server.cjs",
+        "react-app/company-flow.cjs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `checkTasks()` unexpectedly reaches hub `tickCompanyFlows()`"
+    },
+    {
+      "source": "handleCrm()",
+      "target": "runtimeStore()",
+      "source_files": [
+        "netlify/functions/crm.mjs",
+        "netlify/lib/runtime.mjs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `App()` connect `Community 6` to `Community 0`?",
+      "why": "High betweenness centrality (0.029) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `createTaskState()` (e.g. with `task-flow.cjs` and `tick()`) actually correct?",
+      "why": "`createTaskState()` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05925925925925926 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `createTaskState()` connect `Community 4` to `Community 2`, `Community 5`?",
+      "why": "High betweenness centrality (0.024) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `runtimeStore()` (e.g. with `read()` and `tasks()`) actually correct?",
+      "why": "`runtimeStore()` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.06845513413506013 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `runtimeStore()` connect `Community 1` to `Community 4`?",
+      "why": "High betweenness centrality (0.022) - this node is a cross-community bridge."
+    }
+  ]
+}

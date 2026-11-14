@@ -46,7 +46,7 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    }else if(input.action==='contactMade'){
     if(step!==1)throw new Error('Confira a tarefa atual.');
     if(!state.contacts.some(c=>c.id===input.contactId))throw new Error('Selecione uma pessoa cadastrada.');
-    if(!['WhatsApp','Instagram','Ligação telefônica','E-mail','Visita presencial','Outro'].includes(input.method))throw new Error('Selecione o canal de contato.');
+    if(!['WhatsApp','Instagram','Ligação telefônica','E-mail','Visita presencial','Confirmar contato comercial','Outro'].includes(input.method))throw new Error('Selecione o canal de contato.');
     if(state.returnWait?.outcome==='timeout'&&input.method===state.returnWait.previousChannel)throw new Error('Escolha outro meio de contato após a tentativa sem resposta.');
     const action={id:input.requestId||('ACTION-'+now()),contactId:input.contactId,method:input.method,owner,createdAt:new Date(now()).toISOString(),result:null};
     const person=state.contacts.find(c=>c.id===input.contactId);
@@ -68,13 +68,19 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
   if (input.action === 'approachMessage') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.text!=='string'||input.text.length>5000)throw new Error('A mensagem deve ter até 5000 caracteres.');
-   next={...state,approachMessage:input.text.trim()};
+   const text=input.text.trim();
+   next={...state,approachMessage:text,events:[event('Mensagem da abordagem',text,'Confirmar e registrar o envio',state.assignedOwner||'Laura',channel(1)),...state.events]};
   } else if (input.action === 'deleteComment') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.commentId!=='string'||!input.commentId)throw new Error('Notificação inválida.');
    const comment=state.comments.find(item=>item.id===input.commentId);
    if(!comment)throw new Error('Notificação não encontrada.');
    next={...state,comments:state.comments.filter(item=>item.id!==input.commentId),events:state.events.filter(item=>!(item.type==='Comentário da tarefa'&&item.result===comment.text&&item.owner===comment.owner))};
+  } else if (input.action === 'deleteContact') {
+   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if(typeof input.contactId!=='string'||!state.contacts.some(contact=>contact.id===input.contactId))throw new Error('Contato não encontrado.');
+   const removed=state.contacts.find(contact=>contact.id===input.contactId);
+   next={...state,contacts:state.contacts.filter(contact=>contact.id!==input.contactId),events:[event('Contato removido',removed.name+' · '+removed.number,'Acompanhar relacionamento',input.owner||state.assignedOwner||'Laura'),...state.events]};
   } else if (input.action === 'updateContact') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
    const fields=['name','role','method','number','notes'];
@@ -82,7 +88,7 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    if(!input.name.trim()||!input.method.trim()||!input.number.trim())throw new Error('Informe nome, meio e número ou identificador do contato.');
    if(input.name.length>200||input.role.length>200||input.method.length>100||input.number.length>200||input.notes.length>2000)throw new Error('Os dados do contato excedem o limite permitido.');
    if(!state.contacts.some(contact=>contact.id===input.contactId))throw new Error('Contato não encontrado.');
-   next={...state,contacts:state.contacts.map(contact=>contact.id===input.contactId?{...contact,name:input.name.trim(),role:input.role.trim(),method:input.method.trim(),number:input.number.trim(),notes:input.notes.trim(),updatedAt:new Date(now()).toISOString()}:contact)};
+   next={...state,contacts:state.contacts.map(contact=>contact.id===input.contactId?{...contact,name:input.name.trim(),role:input.role.trim(),method:input.method.trim(),number:input.number.trim(),notes:input.notes.trim(),confirmed:typeof input.confirmed==='boolean'?input.confirmed:contact.confirmed===true,updatedAt:new Date(now()).toISOString()}:contact)};
   } else if (input.action === 'comment') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.text!=='string'||!input.text.trim()||input.text.length>5000)throw new Error('Informe um comentário de até 5000 caracteres.');
@@ -96,7 +102,7 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    if(!fields.every(field=>typeof input[field]==='string'))throw new Error('Preencha os dados do contato.');
    if(!input.name.trim()||!input.method.trim()||!input.number.trim())throw new Error('Informe nome, meio e número ou identificador do contato.');
    if(input.name.length>200||input.role.length>200||input.method.length>100||input.number.length>200||input.notes.length>2000)throw new Error('Os dados do contato excedem o limite permitido.');
-   const contact={id:'CONTACT-'+now()+'-'+state.contacts.length,stage:state.stage,name:input.name.trim(),role:input.role.trim(),method:input.method.trim(),number:input.number.trim(),notes:input.notes.trim(),owner:input.owner,createdAt:new Date(now()).toISOString(),date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})};
+   const contact={id:'CONTACT-'+now()+'-'+state.contacts.length,stage:state.stage,name:input.name.trim(),role:input.role.trim(),method:input.method.trim(),number:input.number.trim(),notes:input.notes.trim(),confirmed:input.confirmed===true,owner:input.owner,createdAt:new Date(now()).toISOString(),date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})};
    next={...state,contacts:[contact,...state.contacts],prospectTypes:{...state.prospectTypes,[state.stage]:contact.method},events:[event('Contato registrado',contact.name+' · '+contact.method+' · '+contact.number,'Acompanhar relacionamento',input.owner),...state.events]};
   } else if (input.action === 'prospectType') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');

@@ -1,7 +1,7 @@
 import flow from '../../react-app/task-flow.cjs';
 import {isDeepStrictEqual} from 'node:util';
 
-export function runtimeStore({url,key,request=fetch}) {
+export function runtimeStore({url,key,request=fetch,actor=null}) {
  if(!url||!key)throw new Error('Conexão online não configurada.');
  const base=new URL('/rest/v1/crm_runtime',url);
  if(base.protocol!=='https:'||!base.hostname.endsWith('.supabase.co'))throw new Error('Endereço do banco inválido.');
@@ -27,9 +27,9 @@ export function runtimeStore({url,key,request=fetch}) {
  }
  async function tasks(input,now=()=>Date.now()) {
   return transact('CLI-0001/tasks',state=>{
-   const engine=flow.createTaskState(state,15,now);
+   const engine=flow.createTaskState(state,15,now,()=>{},input?actor:null);
    try{return input?engine.update(input):engine.tick();}
-   catch(error){error.status=409;throw error;}
+   catch(error){error.status=error.status||409;throw error;}
   });
  }
  return {read,transact,tasks};

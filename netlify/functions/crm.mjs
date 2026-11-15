@@ -1,3 +1,4 @@
+import auth from '../../react-app/auth.cjs';
 import companyTasks from '../../react-app/company-flow.cjs';
 import prospects from '../../react-app/supabase-prospects.cjs';
 import {runtimeStore} from '../lib/runtime.mjs';
@@ -11,7 +12,29 @@ async function inputJson(req,limit=24000){
  return value;
 }
 export default async function handler(req) {
- return handleCrm(req,{url:Netlify.env.get('SUPABASE_URL'),key:Netlify.env.get('SUPABASE_SECRET_KEY')});
+ return handleAuthenticatedCrm(req,{url:Netlify.env.get('SUPABASE_URL'),key:Netlify.env.get('SUPABASE_SECRET_KEY')});
+}
+export async function handleAuthenticatedCrm(req,credentials){
+ const path=new URL(req.url).pathname;
+ const writing=!['GET','HEAD'].includes(req.method);
+ if(writing&&(req.headers.get('origin')!==new URL(req.url).origin||!req.headers.get('content-type')?.startsWith('application/json')))return json({error:'Origem inválida.'},403);
+ if(!['GET','POST','PUT'].includes(req.method))return json({error:'Método não permitido.'},405);
+ try{
+  const store=auth.authStore(credentials),token=auth.sessionToken(req);
+  if(path==='/api/crm/auth/login'&&req.method==='POST'){
+   const {user,token:newToken}=await store.login(await inputJson(req,1000));
+   const response=json({user});response.headers.set('Set-Cookie',auth.sessionCookie(req,newToken));return response;
+  }
+  if(path==='/api/crm/auth/logout'&&req.method==='POST'){
+   await store.logout(token);const response=json({ok:true});response.headers.set('Set-Cookie',auth.sessionCookie(req,''));return response;
+  }
+  const actor=await store.user(token);
+  if(path==='/api/crm/auth/session'&&req.method==='GET')return json({user:actor});
+  if(!actor)return json({error:'Entre com seu usuário e senha para acessar o CRM.'},401);
+  if(writing&&(/\/(start|reset|type)$/.test(path)||path==='/api/crm/prospects')&&actor.owner!=='Laura')return json({error:'Esta ação é de responsabilidade de Laura.'},403);
+  if(writing&&path.endsWith('/post-sale')&&actor.owner!=='Samanta')return json({error:'O pós-venda é de responsabilidade de Samantha.'},403);
+  return handleCrm(req,{...credentials,actor});
+ }catch(error){return json({error:error.status?error.message:'Não foi possível verificar o acesso.'},error.status||503)}
 }
 export async function handleCrm(req,credentials) {
  const path=new URL(req.url).pathname;
@@ -45,6 +68,7 @@ export async function handleCrm(req,credentials) {
    if(Object.keys(input).length)return json({error:'Dados inválidos.'},400);
    return json(await prospects.resetProspect({...credentials,code:resetMatch[1]}));
   }
+  if(path==='/api/crm/prospects'&&req.method==='POST'){const input=await inputJson(req,262144);return json(await prospects.createProspect({...credentials,changes:input.changes,allowDuplicate:input.allowDuplicate===true}),201);}
   if(path==='/api/crm/prospects'||/^\/api\/crm\/prospects\/[A-Za-z0-9_-]{1,100}$/.test(path)) {
    const code=path==='/api/crm/prospects'?undefined:path.split('/').pop();
    if(req.method==='PUT'&&code){
@@ -70,7 +94,7 @@ export async function handleCrm(req,credentials) {
   if(kind==='activities'&&req.method==='POST') {
    const fields=['date','type','result','next','owner'];
    if(fields.some(k=>typeof input[k]!=='string'||input[k].length>5000))return json({error:'Atividade inválida.'},400);
-   const item=Object.fromEntries(fields.map(k=>[k,input[k]]));item.id='ACT-'+crypto.randomUUID();item.createdAt=new Date().toISOString();
+   const item=Object.fromEntries(fields.map(k=>[k,input[k]]));if(credentials.actor){item.owner=credentials.actor.owner;item.actorId=credentials.actor.id;item.actorName=credentials.actor.name;}item.id='ACT-'+crypto.randomUUID();item.createdAt=new Date().toISOString();
    await store.transact(name,list=>[item,...list]);return json(item,201);
   }
   if(kind==='post-sale'&&req.method==='PUT') {
@@ -86,7 +110,7 @@ export async function handleCrm(req,credentials) {
      if(!['d7','d30','d90'].includes(period)||!['Pendente','Concluído','Requer atenção'].includes(status)||typeof note!=='string'||note.length>5000||!expected||typeof expected.status!=='string'||typeof expected.note!=='string')return json({error:'Acompanhamento inválido.'},400);
      return json(await store.transact(name,current=>{
       if(!current||Array.isArray(current)||current[period]!==expected.status||(current.notes?.[period]||'')!==expected.note){const error=new Error('Este acompanhamento foi alterado por outra pessoa. Atualize a tela e tente novamente.');error.status=409;throw error;}
-      return {...current,[period]:status,notes:{...current.notes,[period]:note}};
+      return {...current,[period]:status,notes:{...current.notes,[period]:note},...(credentials.actor?{updatedBy:{id:credentials.actor.id,name:credentials.actor.name},completedBy:{...current.completedBy,[period]:{id:credentials.actor.id,name:credentials.actor.name,at:new Date().toISOString()}}}:{})};
      }));
     }
     return json({error:'Ação inválida.'},400);

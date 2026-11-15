@@ -1,4 +1,5 @@
 const fs = require('node:fs');
+const {authorizeTask}=require('./auth.cjs');
 function createTaskFlow(file, lastStage = 15, now = () => Date.now()) {
  let savedState = {};
  if (fs.existsSync(file)) {
@@ -8,9 +9,16 @@ function createTaskFlow(file, lastStage = 15, now = () => Date.now()) {
  }
  return createTaskState(savedState,lastStage,now,next=>fs.writeFileSync(file,JSON.stringify(next,null,2),'utf8'));
 }
-function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), save = () => {}) {
+function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), save = () => {}, actor = null) {
  let state = {stage:1, deadlines:{}, assignedOwner:'', returnWait:null, taskStatuses:{}, events:[], existingClient:null, qualificationStatus:null,comments:[],contacts:[],prospectTypes:{},...initial};
- function commit(next) { save(next); state=next; }
+ let actionActor=null;
+ function commit(next) {
+  if(actionActor){
+   const audit={actorId:actionActor.id,actorName:actionActor.name,actorOwner:actionActor.owner};
+   next={...next,updatedBy:audit,events:(next.events||[]).map(e=>(state.events||[]).some(old=>old.id===e.id)?e:{...e,...audit}),comments:(next.comments||[]).map(c=>(state.comments||[]).some(old=>old.id===c.id)?c:{...c,...audit})};
+  }
+  save(next);state=next;actionActor=null;
+ }
  function channel(stage=state.stage){return state.prospectTypes[stage]||(stage===2?state.prospectTypes[1]:null)||'WhatsApp';}
  function event(type,result,next,owner,prospectType) {return {...(prospectType?{prospectType}:{}),id:'FLOW-'+now()+'-'+state.events.length,stage:state.stage,createdAt:new Date(now()).toISOString(),date:new Date(now()).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'}),type,result,next,owner};}
  function tick() {
@@ -27,7 +35,10 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
   return state;
  }
  function update(input) {
-  tick();
+  actionActor=null;tick();
+  authorizeTask(state,actor);actionActor=actor;
+  if(actor&&input.action==='comment')input={...input,owner:actor.owner};
+  if(actor&&input.action==='deleteComment'){const comment=state.comments.find(c=>c.id===input.commentId);if(comment&&(comment.actorId?comment.actorId!==actor.id:comment.owner!==actor.owner)){const error=new Error('Somente o autor pode excluir este comentário.');error.status=403;throw error}}
   let next=state;
   if(input.requestId!==undefined&&(typeof input.requestId!=='string'||!input.requestId||input.requestId.length>100))throw new Error('Identificador de operação inválido.');
   if(input.requestId && (state.processedRequests||[]).includes(input.requestId))return state;

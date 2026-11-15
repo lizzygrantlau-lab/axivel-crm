@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../functions/crm.mjs';
+import {handleCrm} from '../functions/crm.mjs';
+const handler=req=>handleCrm(req,{url:'https://test.supabase.co',key:'server-secret'});
 
 globalThis.Netlify={env:{get:key=>key==='SUPABASE_URL'?'https://test.supabase.co':'server-secret'}};
 const target='https://axivel-crm.netlify.app';

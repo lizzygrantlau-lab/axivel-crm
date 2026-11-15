@@ -10,17 +10,17 @@ function initialFlow(company){
  const stage=Number(task.etapa);
  return createTaskState({stage,assignedOwner:task.owner,existingClient:company.jaCliente===true?true:'pendente',qualificationStatus:company.jaCliente===true?'cliente':'pendente',prospectTypes:kind?{[stage]:kind}:{}},15).tick();
 }
-async function companyFlow({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code,input,now=()=>Date.now()}={}){
+async function companyFlow({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code,input,actor=null,now=()=>Date.now()}={}){
  if(typeof code!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(code)||code==='CLI-0001'){const e=new Error('Empresa inválida para este fluxo.');e.status=400;throw e}
  const {loadProspects}=require('./supabase-prospects.cjs');
  for(let attempt=0;attempt<4;attempt++){
   const [company]=await loadProspects({url,key,request,code});
   if(!company){const e=new Error('Empresa não encontrada.');e.status=404;throw e}
   const state=company.flow||initialFlow(company);
-  const engine=createTaskState(structuredClone(state),15,now);
+  const engine=createTaskState(structuredClone(state),15,now,()=>{},input?actor:null);
   // Persistir primeiro um prazo vencido, mesmo que a ação enviada tenha ficado antiga.
-  const before=engine.getState();let next=engine.tick();
-  if(isDeepStrictEqual(next,before)&&input){try{next=engine.update(input)}catch(error){error.status=409;throw error}}
+  const before=engine.getState();let next=engine.tick(),acted=false;
+  if(isDeepStrictEqual(next,before)&&input){try{next=engine.update(input);acted=true}catch(error){error.status=error.status||409;throw error}}
   if(isDeepStrictEqual(next,state))return state;
   const revision=(company.flowRevision||0)+1;
   // Cada versão possui uma chave única: apenas uma alteração concorrente pode vencer.
@@ -29,7 +29,7 @@ async function companyFlow({url=process.env.SUPABASE_URL,key=process.env.SUPABAS
   const endpoint=new URL('/rest/v1/historico',url);endpoint.searchParams.set('on_conflict','id');
   const headers={apikey:key,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=representation'};
   if(key.startsWith('eyJ'))headers.Authorization='Bearer '+key;
-  const response=await request(endpoint,{method:'POST',headers,body:JSON.stringify({id,lead_id:company.bancoId,tipo:'fluxo_prospeccao',descricao:'Atualização do fluxo de prospecção: '+stages[next.stage][0],dados:{revision,state:next}}),signal:AbortSignal.timeout(12000)});
+  const response=await request(endpoint,{method:'POST',headers,body:JSON.stringify({id,lead_id:company.bancoId,...(acted&&actor?{autor_id:actor.teamId}:{}),tipo:'fluxo_prospeccao',descricao:'Atualização do fluxo de prospecção: '+stages[next.stage][0],dados:{revision,state:next}}),signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw new Error('Não foi possível salvar o fluxo no Supabase.');
   if((await response.json()).length)return next;
  }

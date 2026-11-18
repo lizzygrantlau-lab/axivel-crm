@@ -3,7 +3,7 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  if(!url||!key)throw new Error('Conexão com o Supabase não configurada no servidor local.');
  const endpoint=new URL('/rest/v1/leads',url);
  if(endpoint.protocol!=='https:'||!endpoint.hostname.endsWith('.supabase.co'))throw new Error('Endereço do Supabase inválido.');
- endpoint.searchParams.set('select','id,codigo,nome,tipo,segmento,cidade,uf,situacao_comercial_axivel,perfil_revenda,observacoes,equipe(nome),analises_leads(prioridade,justificativa,fontes,criado_em),historico(tipo,score:dados->score,classe:dados->>classe,dados),tarefas(id,titulo,status,prazo,etapa_codigo,observacoes,equipe(nome))'+(code?',cnpj,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,enderecos,atualizado_em':''));
+ const baseSelect='id,codigo,nome,tipo,segmento,cidade,uf,situacao_comercial_axivel,perfil_revenda,observacoes,equipe(nome),analises_leads(prioridade,justificativa,fontes,criado_em),historico(tipo,score:dados->score,classe:dados->>classe,dados),tarefas(id,titulo,status,prazo,etapa_codigo,observacoes,equipe(nome))'; const detailSelect=',cnpj,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,enderecos,compradores,atualizado_em'; endpoint.searchParams.set('select',baseSelect+(code?detailSelect:'')); const selectWithoutBuyers=endpoint.searchParams.get('select').replace(',compradores',''); let buyersSupported=true;
  if(code){if(!/^[A-Za-z0-9_-]{1,100}$/.test(code))throw new Error('Código de empresa inválido.');endpoint.searchParams.set('codigo','eq.'+code);}
  endpoint.searchParams.set('ativo','eq.true');
  endpoint.searchParams.set('order','nome.asc,codigo.asc');
@@ -13,7 +13,8 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  // Paginar evita perder empresas quando a base ultrapassar o limite da API.
  for(let offset=0;;offset+=500){
   endpoint.searchParams.set('offset',String(offset));endpoint.searchParams.set('limit','500');
-  const response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)});
+  let response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)});
+  if(!response.ok&&code&&buyersSupported){let detail='';try{detail=typeof response.text==='function'?await response.text():JSON.stringify(await response.json())}catch{}if(/compradores/i.test(detail)){buyersSupported=false;endpoint.searchParams.set('select',selectWithoutBuyers);response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)})}}
   if(!response.ok)throw new Error('Não foi possível consultar os prospects no Supabase.');
   const page=await response.json();
   if(!Array.isArray(page))throw new Error('Resposta inválida ao carregar os prospects.');
@@ -25,7 +26,7 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
   const analysis=[...(row.analises_leads||[])].sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))[0];
   const tarefas=(row.tarefas||[]).filter(t=>t.etapa_codigo!==2).map(t=>({id:t.id,label:t.etapa_codigo===1?'Preparar a abordagem':t.titulo,status:t.status,due:t.prazo||'',owner:t.equipe?.nome||'Não atribuído',etapa:t.etapa_codigo>=3?t.etapa_codigo-1:t.etapa_codigo,observacoes:t.observacoes||''})).sort((a,b)=>a.etapa-b.etapa);
   const situacaoComercialAxivel=row.situacao_comercial_axivel||(row.tipo==='cliente'?'ja_cliente':'ainda_nao_cliente');
-  return {id:row.codigo||row.id,bancoId:row.id,nome:row.nome,tipo:row.tipo,jaCliente:situacaoComercialAxivel==='ja_cliente'?true:null,situacaoComercialAxivel,perfilRevenda:row.perfil_revenda||'nao_identificado',segmento:row.segmento||'',cidade:row.cidade||'',uf:row.uf||'',responsavelAtual:row.equipe?.nome||'Não atribuído',score:imported?.score??null,classe:imported?.classe||'',prioridade:analysis?.prioridade||'',analise:analysis?.justificativa||'',observacoes:row.observacoes||'',fontes:(analysis?.fontes||[]).filter(link=>/^https?:\/\//i.test(link)),...(code?{updatedAt:row.atualizado_em,cnpj:row.cnpj||'',telefone:row.telefone||'',whatsapp:row.whatsapp||'',site:row.site||'',instagram:row.instagram||'',observacoesContatos:row.observacoes_contatos||'',produtosPublico:row.produtos_publico||'',perfilProdutos:row.perfil_produtos||'',vendeBolsasMochilas:row.vende_bolsas_mochilas||'',enderecos:row.enderecos||[]} :{}),tarefas,...(latestFlow?{flow:latestFlow.state,flowRevision:latestFlow.revision,tarefas:require('./company-flow.cjs').flowTasks(latestFlow.state)}:{})};
+  return {id:row.codigo||row.id,bancoId:row.id,nome:row.nome,tipo:row.tipo,jaCliente:situacaoComercialAxivel==='ja_cliente'?true:null,situacaoComercialAxivel,perfilRevenda:row.perfil_revenda||'nao_identificado',segmento:row.segmento||'',cidade:row.cidade||'',uf:row.uf||'',responsavelAtual:row.equipe?.nome||'Não atribuído',score:imported?.score??null,classe:imported?.classe||'',prioridade:analysis?.prioridade||'',analise:analysis?.justificativa||'',observacoes:row.observacoes||'',fontes:(analysis?.fontes||[]).filter(link=>/^https?:\/\//i.test(link)),...(code?{updatedAt:row.atualizado_em,cnpj:row.cnpj||'',telefone:row.telefone||'',whatsapp:row.whatsapp||'',site:row.site||'',instagram:row.instagram||'',observacoesContatos:row.observacoes_contatos||'',produtosPublico:row.produtos_publico||'',perfilProdutos:row.perfil_produtos||'',vendeBolsasMochilas:row.vende_bolsas_mochilas||'',enderecos:row.enderecos||[],compradores:buyersSupported&&Array.isArray(row.compradores)?row.compradores:[],buyersSupported} :{}),tarefas,...(latestFlow?{flow:latestFlow.state,flowRevision:latestFlow.revision,tarefas:require('./company-flow.cjs').flowTasks(latestFlow.state)}:{})};
  }).sort((a,b)=>Number(b.id==='CLI-TESTE')-Number(a.id==='CLI-TESTE')||(b.score??-1)-(a.score??-1)||a.nome.localeCompare(b.nome,'pt-BR'));
 }
 function invalid(message,status=400){const error=new Error(message);error.status=status;return error;}
@@ -37,10 +38,23 @@ function normalizeCnpj(value){
  if(!/^[A-Z0-9]{12}\d{2}$/.test(clean))throw invalid('O CNPJ deve ter 14 posições, sem contar a pontuação.');
  return clean;
 }
+function validateBuyers(value){
+ if(!Array.isArray(value)||value.length>100)throw invalid('Informe uma lista válida de compradores.');
+ const ids=new Set();
+ return value.map(buyer=>{
+  if(!buyer||typeof buyer!=='object'||Array.isArray(buyer))throw invalid('Comprador inválido.');
+  const allowed=['id','nome','telefone','canal','observacoes','confirmado'];
+  if(Object.keys(buyer).some(key=>!allowed.includes(key)))throw invalid('Comprador inválido.');
+  if(typeof buyer.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(buyer.id)||ids.has(buyer.id))throw invalid('Identificação do comprador inválida.');
+  ids.add(buyer.id);
+  if(typeof buyer.nome!=='string'||!buyer.nome.trim()||buyer.nome.length>200||typeof buyer.telefone!=='string'||!buyer.telefone.trim()||buyer.telefone.length>200||typeof buyer.canal!=='string'||!['WhatsApp','Ligação telefônica','Instagram','E-mail','Visita presencial','Outro'].includes(buyer.canal)||typeof buyer.observacoes!=='string'||buyer.observacoes.length>2000||typeof buyer.confirmado!=='boolean')throw invalid('Dados do comprador inválidos.');
+  return {id:buyer.id,nome:buyer.nome.trim(),telefone:buyer.telefone.trim(),canal:buyer.canal,observacoes:buyer.observacoes.trim(),confirmado:buyer.confirmado};
+ });
+}
 function validateCompanyChanges(changes){
  const limits={nome:300,segmento:500,cidade:500,uf:2,telefone:20000,whatsapp:20000,site:20000,instagram:20000,observacoes_contatos:20000,produtos_publico:20000,perfil_produtos:20000,vende_bolsas_mochilas:500,situacao_comercial_axivel:50,perfil_revenda:50};
  if(!changes||typeof changes!=='object'||Array.isArray(changes)||!Object.keys(changes).length)throw invalid('Nenhuma alteração informada.');
- const allowed=[...Object.keys(limits),'cnpj','enderecos'];
+ const allowed=[...Object.keys(limits),'cnpj','enderecos','compradores'];
  if(Object.keys(changes).some(key=>!allowed.includes(key)))throw invalid('O pedido contém campos que não podem ser editados no cadastro.');
  const result={};
  for(const [field,limit]of Object.entries(limits))if(Object.hasOwn(changes,field)){
@@ -72,6 +86,7 @@ function validateCompanyChanges(changes){
    return unit;
   });
  }
+ if(Object.hasOwn(changes,'compradores'))result.compradores=validateBuyers(changes.compradores);
  return result;
 }
 async function saveProspect({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code,changes,updatedAt}={}){
@@ -82,7 +97,7 @@ async function saveProspect({url=process.env.SUPABASE_URL,key=process.env.SUPABA
  const endpoint=new URL('/rest/v1/leads',url);
  if(endpoint.protocol!=='https:'||!endpoint.hostname.endsWith('.supabase.co'))throw new Error('Endereço do Supabase inválido.');
  endpoint.searchParams.set('codigo','eq.'+code);endpoint.searchParams.set('ativo','eq.true');endpoint.searchParams.set('atualizado_em','eq.'+updatedAt);
- endpoint.searchParams.set('select','id,nome,cnpj,cidade,uf,segmento,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,situacao_comercial_axivel,perfil_revenda,enderecos,atualizado_em');
+ endpoint.searchParams.set('select','id,nome,cnpj,cidade,uf,segmento,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,situacao_comercial_axivel,perfil_revenda,enderecos'+(Object.hasOwn(data,'compradores')?',compradores':'')+',atualizado_em');
  const headers={apikey:key,'Content-Type':'application/json',Prefer:'return=representation'};
  if(key.startsWith('eyJ'))headers.Authorization='Bearer '+key;
  const response=await request(endpoint,{method:'PATCH',headers,body:JSON.stringify(data),signal:AbortSignal.timeout(12000)});
@@ -168,4 +183,4 @@ async function resetProspect({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  const historyEndpoint=new URL('/rest/v1/historico',url);const historyId=randomUUID();const historyResponseInsert=await request(historyEndpoint,{method:'POST',headers:{...headers,Prefer:'return=representation'},body:JSON.stringify({id:historyId,lead_id:company.bancoId,tipo:'prospeccao_cancelada',descricao:'Prospecção cancelada e devolvida à fila inicial.',dados:{situacao_comercial:company.situacaoComercialAxivel||'nao_identificado',destino:company.jaCliente===true?'clientes_aguardando_prospeccao':'prospeccoes_a_fazer'}}),signal:AbortSignal.timeout(12000)});if(!historyResponseInsert.ok)throw new Error('Não foi possível registrar o cancelamento no histórico.');
  return (await loadProspects({url,key,request,code}))[0];
 }
-module.exports={loadProspects,saveProspect,validateCompanyChanges,startProspect,saveProspectType,createProspect,resetProspect};
+module.exports={loadProspects,saveProspect,validateCompanyChanges,validateBuyers,startProspect,saveProspectType,createProspect,resetProspect};

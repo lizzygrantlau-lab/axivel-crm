@@ -8,7 +8,8 @@ function initialFlow(company){
  if(!task){const error=new Error('Inicie a prospecção desta empresa antes de abrir a tarefa.');error.status=409;throw error}
  const kind=task.observacoes?.match(/^Tipo de prospecção: ([^\r\n]*)/m)?.[1];
  const stage=Number(task.etapa);
- return createTaskState({stage,assignedOwner:task.owner,existingClient:company.jaCliente===true?true:'pendente',qualificationStatus:company.jaCliente===true?'cliente':'pendente',prospectTypes:kind?{[stage]:kind}:{}},15).tick();
+ const assignedOwner=['IA','Laura','Samanta','Ronaldo'].includes(task.owner)?task.owner:(stages[stage]?.[1]||'Laura');
+ return createTaskState({stage,assignedOwner,existingClient:company.jaCliente===true?true:'pendente',qualificationStatus:company.jaCliente===true?'cliente':'pendente',prospectTypes:kind?{[stage]:kind}:{}},15).tick();
 }
 async function companyFlow({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,code,input,actor=null,now=()=>Date.now()}={}){
  if(typeof code!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(code)||code==='CLI-0001'){const e=new Error('Empresa inválida para este fluxo.');e.status=400;throw e}
@@ -17,7 +18,8 @@ async function companyFlow({url=process.env.SUPABASE_URL,key=process.env.SUPABAS
   const [company]=await loadProspects({url,key,request,code});
   if(!company){const e=new Error('Empresa não encontrada.');e.status=404;throw e}
   const state=company.flow||initialFlow(company);
-  const engine=createTaskState(structuredClone(state),15,now,()=>{},input?actor:null);
+  const normalizedState={...state,assignedOwner:['IA','Laura','Samanta','Ronaldo'].includes(state.assignedOwner)?state.assignedOwner:(stages[state.stage]?.[1]||'Laura')};
+  const engine=createTaskState(structuredClone(normalizedState),15,now,()=>{},input?actor:null);
   // Persistir primeiro um prazo vencido, mesmo que a ação enviada tenha ficado antiga.
   const before=engine.getState();let next=engine.tick(),acted=false;
   if(isDeepStrictEqual(next,before)&&input){try{next=engine.update(input);acted=true}catch(error){error.status=error.status||409;throw error}}

@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {loadProspects,saveProspect,validateCompanyChanges,createProspect,resetProspect}=require('./supabase-prospects.cjs');
+const {loadProspects,saveProspect,validateCompanyChanges,validateBuyers,createProspect,resetProspect}=require('./supabase-prospects.cjs');
 const url='https://example.supabase.co';
 test('conserva score zero, contas separadas, cliente confirmado e fontes seguras sem retornar credenciais',async()=>{
  const key='sb_secret_fixture';
@@ -31,6 +31,22 @@ test('aceita somente valores independentes para situação comercial e perfil de
  assert.deepEqual(validateCompanyChanges({situacao_comercial_axivel:'ja_cliente',perfil_revenda:'revendedor_atual'}),{situacao_comercial_axivel:'ja_cliente',perfil_revenda:'revendedor_atual'});
  assert.throws(()=>validateCompanyChanges({situacao_comercial_axivel:'potencial_revendedor'}),/Situação comercial/);
  assert.throws(()=>validateCompanyChanges({perfil_revenda:'cliente'}),/Perfil de revenda/);
+});
+test('valida compradores do Perfil Comercial sem aceitar campos extras',()=>{
+ const buyer={id:'5b1d3a52-2f1a-4e6e-8a2b-100000000001',nome:'Bianca',telefone:'(51) 99999-5050',canal:'WhatsApp',observacoes:'Compras',confirmado:true};
+ assert.deepEqual(validateBuyers([buyer]),[buyer]);
+ assert.throws(()=>validateBuyers([{...buyer,id:'inválido'}]),/Identificação/);
+ assert.throws(()=>validateCompanyChanges({compradores:[{...buyer,lead_id:'outro'}]}),/Comprador inválido/);
+});
+test('carrega empresa sem falhar quando a coluna compradores ainda não existe',async()=>{
+ let calls=0;
+ const rows=await loadProspects({url,key:'fixture',code:'EMPRESA-B',request:async endpoint=>{
+  calls++;
+  if(calls===1)return {ok:false,text:async()=>JSON.stringify({message:'column leads.compradores does not exist'})};
+  assert.equal(endpoint.searchParams.get('select').includes('compradores'),false);
+  return {ok:true,json:async()=>[{id:'b',codigo:'EMPRESA-B',nome:'Empresa B',tipo:'lead',enderecos:[],tarefas:[]}]};
+ }});
+ assert.equal(calls,2);assert.equal(rows[0].buyersSupported,false);assert.deepEqual(rows[0].compradores,[]);
 });
 test('endereço de cada unidade preserva observações e confiança sem aceitar campos arbitrários',()=>{
  const unit={unidade:'Filial',cnpj:null,endereco:'Rua A, 10',cidade:'Feliz, RS',tipo:'Loja',confianca:'alta',observacoes:'Confirmar complemento'};

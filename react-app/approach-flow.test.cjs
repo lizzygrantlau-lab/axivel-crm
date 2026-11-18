@@ -8,6 +8,11 @@ test('cadastrar pessoa não registra contato, e repetição não duplica',()=>{
  const engine=createTaskState({stage:1},15,now);send(engine,'checklistPrepare',{requestId:'prepare'});const input={requestId:'person',name:'Pessoa',number:'123',role:''};send(engine,'savePerson',input);const state=send(engine,'savePerson',input);
  assert.equal(state.contacts.length,1);assert.equal(state.approach.step,1);assert.equal(state.contactActions,undefined);
 });
+test('confirmar envio registra data, canal e catálogo somente após a ação manual',()=>{
+ const engine=createTaskState({stage:1},15,now);send(engine,'checklistPrepare',{requestId:'prepare'});send(engine,'savePerson',{requestId:'person',name:'Lojas Radan',number:'51999999999'});
+ const state=send(engine,'contactMade',{requestId:'send',contactId:'person',method:'WhatsApp',sentDate:'2026-11-17',catalog:{type:'link',label:'Catálogo AXIVEL por link',url:'https://catalogo.example/axivel.pdf'}});
+ assert.equal(state.approach.step,2);assert.equal(state.contactActions[0].sentDate,'2026-11-17');assert.equal(state.contactActions[0].catalog.url,'https://catalogo.example/axivel.pdf');assert.match(state.events[0].result,/Lojas Radan · WhatsApp · 17\/11\/2026|Lojas Radan · WhatsApp · 2026-11-17/);
+});
 test('sem resposta aguarda até prazo e depois reabre preparação',()=>{
  const engine=start();const state=send(engine,'contactResult',{requestId:'result',result:'sem_resposta',notes:'',date:'2026-11-12'});
  assert.equal(state.stage,2);assert.equal(state.contactActions[0].result,'sem_resposta');assert.equal(engine.update({stage:1,action:'contactResult',requestId:'result'}).contactActions.length,1);

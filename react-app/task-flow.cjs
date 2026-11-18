@@ -59,9 +59,12 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
     if(!state.contacts.some(c=>c.id===input.contactId))throw new Error('Selecione uma pessoa cadastrada.');
     if(!['WhatsApp','Instagram','Ligação telefônica','E-mail','Visita presencial','Confirmar contato comercial','Outro'].includes(input.method))throw new Error('Selecione o canal de contato.');
     if(state.returnWait?.outcome==='timeout'&&input.method===state.returnWait.previousChannel)throw new Error('Escolha outro meio de contato após a tentativa sem resposta.');
-    const action={id:input.requestId||('ACTION-'+now()),contactId:input.contactId,method:input.method,owner,createdAt:new Date(now()).toISOString(),result:null};
+    if(input.sentDate!==undefined&&(!/^\d{4}-\d{2}-\d{2}$/.test(input.sentDate)||!Number.isFinite(Date.parse(input.sentDate))))throw new Error('Informe uma data válida para o envio.');
+    const catalog=input.catalog||null;
+    if(catalog!==null&&(!catalog.type||!['link','pdf'].includes(catalog.type)||typeof catalog.label!=='string'||catalog.label.length>300||(catalog.type==='link'&&(!/^https?:\/\//i.test(catalog.url||'')||catalog.url.length>2000))))throw new Error('Catálogo inválido.');
+    const action={id:input.requestId||('ACTION-'+now()),contactId:input.contactId,method:input.method,owner,createdAt:new Date(now()).toISOString(),sentDate:input.sentDate||new Date(now()).toISOString().slice(0,10),catalog,result:null};
     const person=state.contacts.find(c=>c.id===input.contactId);
-    next={...state,approach:{version:1,step:2,actionId:action.id},contactActions:[action,...(state.contactActions||[])],prospectTypes:{...state.prospectTypes,1:input.method},events:[event('Contato realizado',person.name+' · '+input.method,'Registrar o resultado',owner,input.method),...state.events]};
+    next={...state,approach:{version:1,step:2,actionId:action.id},contactActions:[action,...(state.contactActions||[])],prospectTypes:{...state.prospectTypes,1:input.method},events:[event('Contato realizado',person.name+' · '+input.method+' · '+action.sentDate,'Registrar o resultado',owner,input.method),...state.events]};
    }else{
     if(step!==2)throw new Error('Confira a tarefa atual.');
     if(!['sem_resposta','resposta'].includes(input.result))throw new Error('Selecione o resultado do contato.');
@@ -77,10 +80,10 @@ function createTaskState(initial = {}, lastStage = 15, now = () => Date.now(), s
    commit(next);return state;
   }
   if (input.action === 'approachMessage') {
-   if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
+   if(input.stage!==state.stage&&!(input.action==='approachMessage'&&input.stage===1&&state.stage===2))throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.text!=='string'||input.text.length>5000)throw new Error('A mensagem deve ter até 5000 caracteres.');
    const text=input.text.trim();
-   next={...state,approachMessage:text,events:[event('Mensagem da abordagem',text,'Confirmar e registrar o envio',state.assignedOwner||'Laura',channel(1)),...state.events]};
+   next={...state,approachMessage:text,approach:{...(state.approach||{}),preparationCompleted:true,preparationCompletedAt:new Date(now()).toISOString()},events:[event('Mensagem da abordagem',text,'Confirmar e registrar o envio',state.assignedOwner||'Laura',channel(1)),...state.events]};
   } else if (input.action === 'deleteComment') {
    if(input.stage!==state.stage)throw new Error('A etapa mudou. Confira a tarefa atual.');
    if(typeof input.commentId!=='string'||!input.commentId)throw new Error('Notificação inválida.');

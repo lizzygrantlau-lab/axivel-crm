@@ -13,3 +13,18 @@ Rules:
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
 - A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+
+## Segurança e preservação do CRM
+
+- Nunca remover, desfazer ou modificar funcionalidades existentes sem autorização explícita.
+- Solicitações de análise, investigação ou testes não autorizam alterações no código.
+- “Não modificar código” significa preservar o estado atual; nunca restaurar versões anteriores.
+- Antes de implementar mudanças, identificar os arquivos e funcionalidades afetados.
+- Fazer somente a alteração solicitada, sem refatorações ou melhorias adicionais.
+- Não restaurar arquivos inteiros ou versões antigas sem autorização.
+- Preservar todas as funcionalidades aprovadas, incluindo os quatro indicadores da Central de Prospecção.
+- Preservar os dados e históricos do Supabase. Nunca executar exclusões, migrações ou alterações nos dados reais sem autorização específica.
+- Executar testes de regressão após cada implementação.
+- Verificar o diff do Git antes e depois das alterações, garantindo que nenhuma mudança anterior seja perdida.
+- Caso exista conflito entre uma nova solicitação e funcionalidades anteriores, interromper e pedir orientação.
+- Trabalhar em etapas pequenas, aguardando autorização para avançar.

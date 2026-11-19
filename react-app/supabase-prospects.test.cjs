@@ -18,11 +18,11 @@ test('conserva score zero, contas separadas, cliente confirmado e fontes seguras
 });
 
 test('salva só campos cadastrais da empresa ativa com controle de edição concorrente',async()=>{
- const saved=await saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'2026-11-02T10:00:00.123456+00:00',changes:{nome:' Empresa B ',cnpj:'08.067.458/0001-70',telefone:'',observacoes_contatos:'Prefere WhatsApp pela manhã',produtos_publico:'Bolsas para mulheres',perfil_produtos:'Casual, faixa média',vende_bolsas_mochilas:'Sim',situacao_comercial_axivel:'ainda_nao_cliente',perfil_revenda:'revendedor_potencial'},request:async(endpoint,options)=>{
+ const saved=await saveProspect({url,key:'fixture',code:'EMPRESA-B',updatedAt:'2026-11-02T10:00:00.123456+00:00',changes:{nome:' Empresa B ',cnpj:'08.067.458/0001-70',telefone:'',observacoes_contatos:'Prefere WhatsApp pela manhã',produtos_publico:'Bolsas para mulheres',perfil_produtos:'Casual, faixa média',vende_bolsas_mochilas:'Sim',situacao_comercial_axivel:'ainda_nao_cliente',perfil_revenda:'revendedor_potencial',origens:['lista_vendedor'],origem_detalhe:'Alfeu'},request:async(endpoint,options)=>{
   assert.equal(endpoint.searchParams.get('codigo'),'eq.EMPRESA-B');assert.equal(endpoint.searchParams.get('ativo'),'eq.true');
   assert.equal(endpoint.searchParams.get('atualizado_em'),'eq.2026-11-02T10:00:00.123456+00:00');
   assert.equal(options.method,'PATCH');assert.equal(options.headers.Prefer,'return=representation');
-  assert.deepEqual(JSON.parse(options.body),{nome:'Empresa B',telefone:'',cnpj:'08067458000170',observacoes_contatos:'Prefere WhatsApp pela manhã',produtos_publico:'Bolsas para mulheres',perfil_produtos:'Casual, faixa média',vende_bolsas_mochilas:'Sim',situacao_comercial_axivel:'ainda_nao_cliente',perfil_revenda:'revendedor_potencial'});
+  assert.deepEqual(JSON.parse(options.body),{nome:'Empresa B',telefone:'',cnpj:'08067458000170',observacoes_contatos:'Prefere WhatsApp pela manhã',produtos_publico:'Bolsas para mulheres',perfil_produtos:'Casual, faixa média',vende_bolsas_mochilas:'Sim',situacao_comercial_axivel:'ainda_nao_cliente',perfil_revenda:'revendedor_potencial',origens:['lista_vendedor'],origem_detalhe:'Alfeu'});
   return {ok:true,json:async()=>[{nome:'Empresa B',cnpj:'08067458000170',telefone:'',atualizado_em:'2026-11-02T11:00:00+00:00'}]};
  }});
  assert.equal(saved.updatedAt,'2026-11-02T11:00:00+00:00');assert.equal(saved.cnpj,'08067458000170');
@@ -31,6 +31,28 @@ test('aceita somente valores independentes para situação comercial e perfil de
  assert.deepEqual(validateCompanyChanges({situacao_comercial_axivel:'ja_cliente',perfil_revenda:'revendedor_atual'}),{situacao_comercial_axivel:'ja_cliente',perfil_revenda:'revendedor_atual'});
  assert.throws(()=>validateCompanyChanges({situacao_comercial_axivel:'potencial_revendedor'}),/Situação comercial/);
  assert.throws(()=>validateCompanyChanges({perfil_revenda:'cliente'}),/Perfil de revenda/);
+});
+test('valida origens múltiplas, deduplica e usa lista vazia quando não informada',()=>{
+ assert.deepEqual(validateCompanyChanges({origens:['pesquisa_manual','outros','pesquisa_manual'],origem_detalhe:'Planilha Alfeu'}),{origens:['pesquisa_manual','outros'],origem_detalhe:'Planilha Alfeu'});
+ assert.deepEqual(validateCompanyChanges({origens:[]}),{origens:[]});
+ assert.throws(()=>validateCompanyChanges({origens:['nao_informado']}),/Origem da empresa/);
+});
+test('carrega origens e detalhe sem confundir origem com situação comercial',async()=>{
+ const [company]=await loadProspects({url,key:'fixture',code:'EMPRESA-B',request:async endpoint=>{
+  assert.match(endpoint.searchParams.get('select'),/origens/);
+  return {ok:true,json:async()=>[{id:'b',codigo:'EMPRESA-B',nome:'Empresa B',tipo:'lead',origens:['lista_vendedor','outros'],origem_detalhe:'Alfeu',situacao_comercial_axivel:'ainda_nao_cliente',perfil_revenda:'nao_identificado',tarefas:[]} ]};
+ }});
+ assert.deepEqual(company.origens,['lista_vendedor','outros']);assert.equal(company.origemDetalhe,'Alfeu');assert.equal(company.jaCliente,null);
+});
+test('continua carregando quando as novas colunas de origem ainda não existem',async()=>{
+ let calls=0;
+ const [company]=await loadProspects({url,key:'fixture',code:'EMPRESA-B',request:async endpoint=>{
+  calls++;
+  if(calls===1)return {ok:false,text:async()=>JSON.stringify({message:'column leads.origens does not exist'})};
+  assert.doesNotMatch(endpoint.searchParams.get('select'),/origens|origem_detalhe/);
+  return {ok:true,json:async()=>[{id:'b',codigo:'EMPRESA-B',nome:'Empresa B',tipo:'lead',tarefas:[]} ]};
+ }});
+ assert.equal(calls,2);assert.deepEqual(company.origens,[]);assert.equal(company.originsSupported,false);
 });
 test('valida compradores do Perfil Comercial sem aceitar campos extras',()=>{
  const buyer={id:'5b1d3a52-2f1a-4e6e-8a2b-100000000001',nome:'Bianca',telefone:'(51) 99999-5050',canal:'WhatsApp',observacoes:'Compras',confirmado:true};

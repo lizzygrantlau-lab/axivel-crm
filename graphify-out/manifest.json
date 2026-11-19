@@ -1,292 +1,316 @@
 {
   ".codex/hooks.json": {
-    "mtime": 1794489866.2207265,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095361.4026704,
+    "seen": 1795103943.8808625,
     "ast_hash": "f0bf50087bd92b116c3d596e10a3ac9f",
     "semantic_hash": "f0bf50087bd92b116c3d596e10a3ac9f",
     "ast_empty": true
   },
   ".openai/hosting.json": {
-    "mtime": 1794489866.2352054,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.828514,
+    "seen": 1795103943.8808625,
     "ast_hash": "dda9f362014fc209a1303eb8236ea9da",
     "semantic_hash": "dda9f362014fc209a1303eb8236ea9da",
     "ast_empty": true
   },
   "netlify/functions/crm.mjs": {
-    "mtime": 1794933197.736748,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.0708044,
+    "seen": 1795103943.8808625,
     "ast_hash": "74cd40ac677d72c1ea378ab65ca7cc76",
     "semantic_hash": ""
   },
   "netlify/functions/prazos.mjs": {
-    "mtime": 1794489866.2530448,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.8351727,
+    "seen": 1795103943.8808625,
     "ast_hash": "bc18f05a6f2bb1b5fc489e79a0d33ba3",
     "semantic_hash": "bc18f05a6f2bb1b5fc489e79a0d33ba3"
   },
   "netlify/lib/runtime.mjs": {
-    "mtime": 1794933197.7455885,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.077786,
+    "seen": 1795103943.8808625,
     "ast_hash": "1986316b2b129a0c46a32ab6e086d400",
     "semantic_hash": ""
   },
   "netlify/lib/runtime.test.mjs": {
-    "mtime": 1794489866.255041,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.1146872,
+    "seen": 1795103943.8808625,
     "ast_hash": "601538463ca650c16a46d8105cd1f824",
     "semantic_hash": ""
   },
   "netlify/tests/crm.test.mjs": {
-    "mtime": 1794933197.770128,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.1316416,
+    "seen": 1795103943.8808625,
     "ast_hash": "13a07573e9ddaa32e798f790c6df4c48",
     "semantic_hash": ""
   },
   "react-app/app.jsx": {
-    "mtime": 1795028379.9887881,
-    "seen": 1795028392.2494483,
-    "ast_hash": "1c59a1a995fe3c749e6f623ab1f447a3",
+    "mtime": 1795126885.7248354,
+    "seen": 1795126926.1218693,
+    "ast_hash": "94e05054efcccb7f0b696eff6ae3b3ff",
     "semantic_hash": ""
   },
   "react-app/approach-flow.test.cjs": {
-    "mtime": 1794933921.3462522,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.2550662,
+    "seen": 1795103943.8808625,
     "ast_hash": "8a68e10f6f8ed9bf3341905fa3813f0f",
     "semantic_hash": ""
   },
   "react-app/company-flow.cjs": {
-    "mtime": 1795023147.8983555,
-    "seen": 1795023171.8075762,
+    "mtime": 1795095362.287978,
+    "seen": 1795103943.8808625,
     "ast_hash": "eda9cb838bf5d71203011e8daad013b7",
     "semantic_hash": ""
   },
   "react-app/company-flow.test.cjs": {
-    "mtime": 1794489866.266163,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.3308642,
+    "seen": 1795103943.8808625,
     "ast_hash": "2b27a388578788544937b15f2ac160ce",
     "semantic_hash": ""
   },
   "react-app/online-server.mjs": {
-    "mtime": 1794489866.2696795,
-    "seen": 1794934026.1066701,
+    "mtime": 1794449502.4064064,
+    "seen": 1795103943.8808625,
     "ast_hash": "6b814a506fa8b65484b80ef3eda6c5d0",
     "semantic_hash": ""
   },
   "react-app/online-server.test.mjs": {
-    "mtime": 1794489866.2706778,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.849517,
+    "seen": 1795103943.8808625,
     "ast_hash": "0ec0b4463fe8661dcdc1b7d25b7f01c2",
     "semantic_hash": ""
   },
   "react-app/prospect-type.test.cjs": {
-    "mtime": 1794489866.2723045,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.850519,
+    "seen": 1795103943.8808625,
     "ast_hash": "9c53c251a1046375fec427d76c4d74d8",
     "semantic_hash": ""
   },
   "react-app/server.cjs": {
-    "mtime": 1794933197.8361356,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.5053964,
+    "seen": 1795103943.8808625,
     "ast_hash": "66a11c182d3915af8aca347fab66a942",
     "semantic_hash": ""
   },
   "react-app/start-prospect.test.cjs": {
-    "mtime": 1794489866.2772923,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.682921,
+    "seen": 1795103943.8808625,
     "ast_hash": "3261efbc82e08095f427fa5c3017c1ff",
     "semantic_hash": ""
   },
   "react-app/supabase-prospects.cjs": {
-    "mtime": 1795028004.0964444,
-    "seen": 1795028314.4943128,
-    "ast_hash": "d1bf405f9b7737f6c9ed5e426aa26060",
+    "mtime": 1795118929.4471643,
+    "seen": 1795119305.1352773,
+    "ast_hash": "df4354f8bd3044da4a2b5bd2ca06deb8",
     "semantic_hash": ""
   },
   "react-app/supabase-prospects.test.cjs": {
-    "mtime": 1795028020.474889,
-    "seen": 1795028314.4943128,
-    "ast_hash": "ee5eee1623e1ae6b290954a556875664",
+    "mtime": 1795119333.6531434,
+    "seen": 1795119341.2180376,
+    "ast_hash": "57dba1a1df3612c31f3721a6e655d99e",
     "semantic_hash": ""
   },
   "react-app/synced-task-flow.cjs": {
-    "mtime": 1794489866.2831323,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.8545492,
+    "seen": 1795103943.8808625,
     "ast_hash": "5e858dbd41d4ce04d6edea3dfb2f1f09",
     "semantic_hash": ""
   },
   "react-app/synced-task-flow.test.cjs": {
-    "mtime": 1794489866.284129,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.8786986,
+    "seen": 1795103943.8808625,
     "ast_hash": "9e9c9b1e8438d9727ffe50eea1f1727c",
     "semantic_hash": ""
   },
   "react-app/task-flow.cjs": {
-    "mtime": 1794940384.2050173,
-    "seen": 1794940405.604523,
+    "mtime": 1795095362.8906665,
+    "seen": 1795103943.8808625,
     "ast_hash": "67c91058877c7b6fb611564784a8823f",
     "semantic_hash": ""
   },
   "react-app/task-flow.test.cjs": {
-    "mtime": 1794502212.3273134,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.9544969,
+    "seen": 1795103943.8808625,
     "ast_hash": "418327a38f094e943d0bbc5bde67be4d",
     "semantic_hash": ""
   },
   "render.yaml": {
-    "mtime": 1794489866.2871966,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.8575418,
+    "seen": 1795103943.8808625,
     "ast_hash": "abef942c4715f5a31971fea6be96dba4",
     "semantic_hash": ""
   },
   "scripts/build-netlify.cjs": {
-    "mtime": 1794489866.2882786,
-    "seen": 1794934026.1066701,
+    "mtime": 1794449502.405409,
+    "seen": 1795103943.8808625,
     "ast_hash": "2b4359a235d964a4c467cdc682537daa",
     "semantic_hash": ""
   },
   "scripts/seed-online.cjs": {
-    "mtime": 1794489866.289277,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.858539,
+    "seen": 1795103943.8808625,
     "ast_hash": "0dd48a4da7a5d9899fd631a5ccba1c9c",
     "semantic_hash": ""
   },
   "database/axivel-schema.sql": {
-    "mtime": 1794933197.6121085,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095361.8514998,
+    "seen": 1795103943.8808625,
     "ast_hash": "23fc3041f21d52e24e94212d8519b198",
     "semantic_hash": ""
   },
   "database/axivel-verificacao.sql": {
-    "mtime": 1794489866.2413855,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095361.8814197,
+    "seen": 1795103943.8808625,
     "ast_hash": "c7c1751c20e2ef41dc67a96ece9e0d0c",
     "semantic_hash": "c7c1751c20e2ef41dc67a96ece9e0d0c"
   },
   "database/netlify-runtime.sql": {
-    "mtime": 1794489866.242383,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.8314693,
+    "seen": 1795103943.8808625,
     "ast_hash": "74ec7dc35be284cd0d0d065dd6e2a827",
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1794489866.236204,
-    "seen": 1794934026.1066701,
-    "ast_hash": "5d9e927969693a1722c37db8663c6e1a",
+    "mtime": 1795115255.8560498,
+    "seen": 1795115678.9473393,
+    "ast_hash": "dd354834cc6e1158e58e5ffc8d1a7452",
     "semantic_hash": ""
   },
   "DEPLOY-NETLIFY.md": {
-    "mtime": 1794489866.2372017,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.828514,
+    "seen": 1795103943.8808625,
     "ast_hash": "01a0149cedbceab9eae7e95268a67980",
     "semantic_hash": ""
   },
   "DEPLOY-RENDER.md": {
-    "mtime": 1794489866.2372017,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.829511,
+    "seen": 1795103943.8808625,
     "ast_hash": "3a029e045a1a5b21c2bffd975f699975",
     "semantic_hash": ""
   },
   "EXECUTAR-LOCAL.md": {
-    "mtime": 1794933197.6025038,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095361.8485081,
+    "seen": 1795103943.8808625,
     "ast_hash": "544d456aaf0e9472d89407745812693c",
     "semantic_hash": ""
   },
   "react-app/index.html": {
-    "mtime": 1795028381.0689538,
-    "seen": 1795028392.2494483,
-    "ast_hash": "a1bdfc944df0ea6b8de188c8e27bb7ad",
+    "mtime": 1795114916.3239293,
+    "seen": 1795114963.6037152,
+    "ast_hash": "e83a9f82ddd0d03f9a4d2b639c1eae8a",
     "semantic_hash": ""
   },
   "react-app/assets/axivel-ax-original.png": {
-    "mtime": 1794489866.2633028,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.8404791,
+    "seen": 1795103943.8808625,
     "ast_hash": "131436af269e286d8dc93994a33759af",
     "semantic_hash": ""
   },
   "react-app/assets/axivel-logo.svg": {
-    "mtime": 1794489866.2641673,
-    "seen": 1794934026.1066701,
+    "mtime": 1794431017.8414774,
+    "seen": 1795103943.8808625,
     "ast_hash": "1253b605ec1595a0c02dce2e27a742a8",
     "semantic_hash": ""
   },
   "react-app/return-options.test.cjs": {
-    "mtime": 1794489866.273304,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.4525368,
+    "seen": 1795103943.8808625,
     "ast_hash": "4aed7a8762d22224bcd32fc0440ea48b",
     "semantic_hash": ""
   },
   "react-app/schedule-wait.test.cjs": {
-    "mtime": 1794489866.2742999,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.496421,
+    "seen": 1795103943.8808625,
     "ast_hash": "2f6dd35f9985c289a41b34086e6f2fe4",
     "semantic_hash": ""
   },
   "react-app/stage-follow-up.test.cjs": {
-    "mtime": 1794489866.2762947,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.5692265,
+    "seen": 1795103943.8808625,
     "ast_hash": "33118a3bfa44642dc582c940ec3dcfcf",
     "semantic_hash": ""
   },
   "netlify/tests/post-sale.test.mjs": {
-    "mtime": 1794489866.2573183,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.196224,
+    "seen": 1795103943.8808625,
     "ast_hash": "203ee3b4d60efb267197f12b0a3bfed8",
     "semantic_hash": ""
   },
   "netlify/tests/auth.test.mjs": {
-    "mtime": 1794933197.7455885,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.1256583,
+    "seen": 1795103943.8808625,
     "ast_hash": "e0dd11e6d666aaee1df70da95071da2a",
     "semantic_hash": ""
   },
   "react-app/auth.cjs": {
-    "mtime": 1794933197.779024,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095362.2809987,
+    "seen": 1795103943.8808625,
     "ast_hash": "439dc12ad48960841ff034f5c738ffb0",
     "semantic_hash": ""
   },
-  ".graphify-download-backup-20261117/.graphify_build_state.json": {
-    "mtime": 1794507867.41456,
-    "seen": 1794934026.1066701,
-    "ast_hash": "c05af02c447ee97da9338b83c86fd8ab",
-    "semantic_hash": ""
-  },
-  ".graphify-download-backup-20261117/.graphify_labels.json": {
-    "mtime": 1794507867.3358114,
-    "seen": 1794934026.1066701,
-    "ast_hash": "c443b04d0fc26b0a5a4573a78e0082a1",
-    "semantic_hash": ""
-  },
-  ".graphify-download-backup-20261117/.graphify_labels.pending.json": {
-    "mtime": 1794507867.3358114,
-    "seen": 1794934026.1066701,
-    "ast_hash": "325939cacd238fe252f0e284fc7b1c88",
-    "semantic_hash": ""
-  },
-  ".graphify-download-backup-20261117/manifest.json": {
-    "mtime": 1794507867.3826752,
-    "seen": 1794934026.1066701,
-    "ast_hash": "382e5727d25a764abc2719c1b6947c27",
-    "semantic_hash": ""
-  },
   "database/axivel-usuarios.sql": {
-    "mtime": 1794933197.6121085,
-    "seen": 1794934026.1066701,
+    "mtime": 1795095361.8584814,
+    "seen": 1795103943.8808625,
     "ast_hash": "5079e0cc2a9e2238e8a7e595c8db8a9a",
     "semantic_hash": ""
   },
   "react-app/approach-message.test.cjs": {
-    "mtime": 1795027272.2835977,
-    "seen": 1795027301.1445324,
-    "ast_hash": "db757eacaa8b4666bf078160ba559db3",
+    "mtime": 1795117815.4559348,
+    "seen": 1795117827.248133,
+    "ast_hash": "bc40bb3b71f98232bce91d19ad5d7729",
     "semantic_hash": ""
   },
   "database/migrations/20261118_add_leads_compradores.sql": {
-    "mtime": 1795027942.435714,
-    "seen": 1795028314.4943128,
-    "ast_hash": "1bb28c2db60af4382d2880699c343b77",
+    "mtime": 1795095361.8874035,
+    "seen": 1795103943.8808625,
+    "ast_hash": "9e57de934ff604ddab53df64be7aa278",
+    "semantic_hash": ""
+  },
+  "react-app/contact-view-model.cjs": {
+    "mtime": 1795104675.5586357,
+    "seen": 1795104690.6423197,
+    "ast_hash": "abb26042079daf457f823e7d19baa6ba",
+    "semantic_hash": ""
+  },
+  "react-app/contact-view-model.test.cjs": {
+    "mtime": 1795104685.2678702,
+    "seen": 1795104690.6423197,
+    "ast_hash": "7ee879c66d80b72bf9d9560d088b518c",
+    "semantic_hash": ""
+  },
+  "react-app/approach-stage-navigation.test.cjs": {
+    "mtime": 1795104353.5435524,
+    "seen": 1795104378.5940497,
+    "ast_hash": "12bf7b66c847e85de3d98b7095877b8e",
+    "semantic_hash": ""
+  },
+  "react-app/assets/approach-stage-navigation.js": {
+    "mtime": 1795104353.537568,
+    "seen": 1795104378.5940497,
+    "ast_hash": "35fa37152a5c2c230333f0f867343764",
+    "semantic_hash": ""
+  },
+  "react-app/assets/contact-view-model.js": {
+    "mtime": 1795114916.322931,
+    "seen": 1795114963.6037152,
+    "ast_hash": "7af3833ac02451fdafaaffb1927f48aa",
+    "semantic_hash": ""
+  },
+  "react-app/profile-commercial-buyers.test.cjs": {
+    "mtime": 1795126910.942763,
+    "seen": 1795126926.1218693,
+    "ast_hash": "0d3092b1c9bbc21c406ff3d7a92d8552",
+    "semantic_hash": ""
+  },
+  "database/migrations/20261119_add_leads_origens.sql": {
+    "mtime": 1795118887.9362514,
+    "seen": 1795119305.1352773,
+    "ast_hash": "2879d18fc50391d3124db52b22e46e71",
+    "semantic_hash": ""
+  },
+  "react-app/company-origin-filter.test.cjs": {
+    "mtime": 1795119287.9540865,
+    "seen": 1795119305.1352773,
+    "ast_hash": "ebbe0e4c632ed1e34d58954e3da98ec4",
     "semantic_hash": ""
   }
 }

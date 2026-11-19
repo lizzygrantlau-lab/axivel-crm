@@ -3,7 +3,7 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  if(!url||!key)throw new Error('Conexão com o Supabase não configurada no servidor local.');
  const endpoint=new URL('/rest/v1/leads',url);
  if(endpoint.protocol!=='https:'||!endpoint.hostname.endsWith('.supabase.co'))throw new Error('Endereço do Supabase inválido.');
- const baseSelect='id,codigo,nome,tipo,segmento,cidade,uf,situacao_comercial_axivel,perfil_revenda,observacoes,equipe(nome),analises_leads(prioridade,justificativa,fontes,criado_em),historico(tipo,score:dados->score,classe:dados->>classe,dados),tarefas(id,titulo,status,prazo,etapa_codigo,observacoes,equipe(nome))'; const detailSelect=',cnpj,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,enderecos,compradores,atualizado_em'; endpoint.searchParams.set('select',baseSelect+(code?detailSelect:'')); const selectWithoutBuyers=endpoint.searchParams.get('select').replace(',compradores',''); let buyersSupported=true;
+ const baseSelect='id,codigo,nome,tipo,segmento,cidade,uf,situacao_comercial_axivel,perfil_revenda,observacoes,equipe(nome),analises_leads(prioridade,justificativa,fontes,criado_em),historico(tipo,score:dados->score,classe:dados->>classe,dados),tarefas(id,titulo,status,prazo,etapa_codigo,observacoes,equipe(nome))'; const detailSelect=',cnpj,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,enderecos,compradores,origens,origem_detalhe,atualizado_em'; endpoint.searchParams.set('select',baseSelect+(code?detailSelect:',origens,origem_detalhe')); const selectWithoutOrigins=endpoint.searchParams.get('select').replace(',origens,origem_detalhe',''); const selectWithoutBuyers=selectWithoutOrigins.replace(',compradores',''); let buyersSupported=true; let originsSupported=true;
  if(code){if(!/^[A-Za-z0-9_-]{1,100}$/.test(code))throw new Error('Código de empresa inválido.');endpoint.searchParams.set('codigo','eq.'+code);}
  endpoint.searchParams.set('ativo','eq.true');
  endpoint.searchParams.set('order','nome.asc,codigo.asc');
@@ -14,7 +14,7 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
  for(let offset=0;;offset+=500){
   endpoint.searchParams.set('offset',String(offset));endpoint.searchParams.set('limit','500');
   let response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)});
-  if(!response.ok&&code&&buyersSupported){let detail='';try{detail=typeof response.text==='function'?await response.text():JSON.stringify(await response.json())}catch{}if(/compradores/i.test(detail)){buyersSupported=false;endpoint.searchParams.set('select',selectWithoutBuyers);response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)})}}
+  if(!response.ok){let detail='';try{detail=typeof response.text==='function'?await response.text():JSON.stringify(await response.json())}catch{}if(/origens|origem_detalhe/i.test(detail)&&originsSupported){originsSupported=false;endpoint.searchParams.set('select',selectWithoutOrigins);response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)});if(!response.ok){try{detail=typeof response.text==='function'?await response.text():JSON.stringify(await response.json())}catch{}}}if(!response.ok&&/compradores/i.test(detail)&&buyersSupported){buyersSupported=false;endpoint.searchParams.set('select',selectWithoutBuyers);response=await request(endpoint,{headers,signal:AbortSignal.timeout(12000)})}}
   if(!response.ok)throw new Error('Não foi possível consultar os prospects no Supabase.');
   const page=await response.json();
   if(!Array.isArray(page))throw new Error('Resposta inválida ao carregar os prospects.');
@@ -26,7 +26,7 @@ async function loadProspects({url=process.env.SUPABASE_URL,key=process.env.SUPAB
   const analysis=[...(row.analises_leads||[])].sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))[0];
   const tarefas=(row.tarefas||[]).filter(t=>t.etapa_codigo!==2).map(t=>({id:t.id,label:t.etapa_codigo===1?'Preparar a abordagem':t.titulo,status:t.status,due:t.prazo||'',owner:t.equipe?.nome||'Não atribuído',etapa:t.etapa_codigo>=3?t.etapa_codigo-1:t.etapa_codigo,observacoes:t.observacoes||''})).sort((a,b)=>a.etapa-b.etapa);
   const situacaoComercialAxivel=row.situacao_comercial_axivel||(row.tipo==='cliente'?'ja_cliente':'ainda_nao_cliente');
-  return {id:row.codigo||row.id,bancoId:row.id,nome:row.nome,tipo:row.tipo,jaCliente:situacaoComercialAxivel==='ja_cliente'?true:null,situacaoComercialAxivel,perfilRevenda:row.perfil_revenda||'nao_identificado',segmento:row.segmento||'',cidade:row.cidade||'',uf:row.uf||'',responsavelAtual:row.equipe?.nome||'Não atribuído',score:imported?.score??null,classe:imported?.classe||'',prioridade:analysis?.prioridade||'',analise:analysis?.justificativa||'',observacoes:row.observacoes||'',fontes:(analysis?.fontes||[]).filter(link=>/^https?:\/\//i.test(link)),...(code?{updatedAt:row.atualizado_em,cnpj:row.cnpj||'',telefone:row.telefone||'',whatsapp:row.whatsapp||'',site:row.site||'',instagram:row.instagram||'',observacoesContatos:row.observacoes_contatos||'',produtosPublico:row.produtos_publico||'',perfilProdutos:row.perfil_produtos||'',vendeBolsasMochilas:row.vende_bolsas_mochilas||'',enderecos:row.enderecos||[],compradores:buyersSupported&&Array.isArray(row.compradores)?row.compradores:[],buyersSupported} :{}),tarefas,...(latestFlow?{flow:latestFlow.state,flowRevision:latestFlow.revision,tarefas:require('./company-flow.cjs').flowTasks(latestFlow.state)}:{})};
+  return {id:row.codigo||row.id,bancoId:row.id,nome:row.nome,tipo:row.tipo,jaCliente:situacaoComercialAxivel==='ja_cliente'?true:null,situacaoComercialAxivel,perfilRevenda:row.perfil_revenda||'nao_identificado',segmento:row.segmento||'',cidade:row.cidade||'',uf:row.uf||'',responsavelAtual:row.equipe?.nome||'Não atribuído',score:imported?.score??null,classe:imported?.classe||'',prioridade:analysis?.prioridade||'',analise:analysis?.justificativa||'',observacoes:row.observacoes||'',fontes:(analysis?.fontes||[]).filter(link=>/^https?:\/\//i.test(link)),origens:originsSupported&&Array.isArray(row.origens)?row.origens:[],origemDetalhe:originsSupported&&typeof row.origem_detalhe==='string'?row.origem_detalhe:'',...(code?{updatedAt:row.atualizado_em,cnpj:row.cnpj||'',telefone:row.telefone||'',whatsapp:row.whatsapp||'',site:row.site||'',instagram:row.instagram||'',observacoesContatos:row.observacoes_contatos||'',produtosPublico:row.produtos_publico||'',perfilProdutos:row.perfil_produtos||'',vendeBolsasMochilas:row.vende_bolsas_mochilas||'',enderecos:row.enderecos||[],compradores:buyersSupported&&Array.isArray(row.compradores)?row.compradores:[],buyersSupported,originsSupported} :{}),tarefas,...(latestFlow?{flow:latestFlow.state,flowRevision:latestFlow.revision,tarefas:require('./company-flow.cjs').flowTasks(latestFlow.state)}:{})};
  }).sort((a,b)=>Number(b.id==='CLI-TESTE')-Number(a.id==='CLI-TESTE')||(b.score??-1)-(a.score??-1)||a.nome.localeCompare(b.nome,'pt-BR'));
 }
 function invalid(message,status=400){const error=new Error(message);error.status=status;return error;}
@@ -52,9 +52,9 @@ function validateBuyers(value){
  });
 }
 function validateCompanyChanges(changes){
- const limits={nome:300,segmento:500,cidade:500,uf:2,telefone:20000,whatsapp:20000,site:20000,instagram:20000,observacoes_contatos:20000,produtos_publico:20000,perfil_produtos:20000,vende_bolsas_mochilas:500,situacao_comercial_axivel:50,perfil_revenda:50};
+ const limits={nome:300,segmento:500,cidade:500,uf:2,telefone:20000,whatsapp:20000,site:20000,instagram:20000,observacoes_contatos:20000,produtos_publico:20000,perfil_produtos:20000,vende_bolsas_mochilas:500,situacao_comercial_axivel:50,perfil_revenda:50,origem_detalhe:20000};
  if(!changes||typeof changes!=='object'||Array.isArray(changes)||!Object.keys(changes).length)throw invalid('Nenhuma alteração informada.');
- const allowed=[...Object.keys(limits),'cnpj','enderecos','compradores'];
+ const allowed=[...Object.keys(limits),'cnpj','enderecos','compradores','origens'];
  if(Object.keys(changes).some(key=>!allowed.includes(key)))throw invalid('O pedido contém campos que não podem ser editados no cadastro.');
  const result={};
  for(const [field,limit]of Object.entries(limits))if(Object.hasOwn(changes,field)){
@@ -70,6 +70,7 @@ function validateCompanyChanges(changes){
  if(Object.hasOwn(changes,'cnpj'))result.cnpj=normalizeCnpj(changes.cnpj);
  if(Object.hasOwn(result,'situacao_comercial_axivel')&&!['ja_cliente','ainda_nao_cliente'].includes(result.situacao_comercial_axivel))throw invalid('Situação comercial inválida.');
  if(Object.hasOwn(result,'perfil_revenda')&&!['revendedor_atual','revendedor_potencial','nao_identificado'].includes(result.perfil_revenda))throw invalid('Perfil de revenda inválido.');
+ if(Object.hasOwn(changes,'origens')){if(!Array.isArray(changes.origens)||changes.origens.some(value=>typeof value!=='string'||!['indicacao_ia','indicacao_proprietarios','lista_vendedor','pesquisa_manual','outros'].includes(value)))throw invalid('Origem da empresa inválida.');result.origens=[...new Set(changes.origens)];}
  if(Object.hasOwn(changes,'enderecos')){
   if(!Array.isArray(changes.enderecos)||changes.enderecos.length>100)throw invalid('Informe uma lista válida de endereços.');
   const fields=['unidade','endereco','cidade','tipo','confianca','observacoes'];
@@ -97,7 +98,7 @@ async function saveProspect({url=process.env.SUPABASE_URL,key=process.env.SUPABA
  const endpoint=new URL('/rest/v1/leads',url);
  if(endpoint.protocol!=='https:'||!endpoint.hostname.endsWith('.supabase.co'))throw new Error('Endereço do Supabase inválido.');
  endpoint.searchParams.set('codigo','eq.'+code);endpoint.searchParams.set('ativo','eq.true');endpoint.searchParams.set('atualizado_em','eq.'+updatedAt);
- endpoint.searchParams.set('select','id,nome,cnpj,cidade,uf,segmento,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,situacao_comercial_axivel,perfil_revenda,enderecos'+(Object.hasOwn(data,'compradores')?',compradores':'')+',atualizado_em');
+ endpoint.searchParams.set('select','id,nome,cnpj,cidade,uf,segmento,telefone,whatsapp,site,instagram,observacoes_contatos,produtos_publico,perfil_produtos,vende_bolsas_mochilas,situacao_comercial_axivel,perfil_revenda,enderecos'+(Object.hasOwn(data,'compradores')?',compradores':'')+(Object.hasOwn(data,'origens')?',origens,origem_detalhe':'')+',atualizado_em');
  const headers={apikey:key,'Content-Type':'application/json',Prefer:'return=representation'};
  if(key.startsWith('eyJ'))headers.Authorization='Bearer '+key;
  const response=await request(endpoint,{method:'PATCH',headers,body:JSON.stringify(data),signal:AbortSignal.timeout(12000)});
@@ -156,7 +157,7 @@ async function saveProspectType({url=process.env.SUPABASE_URL,key=process.env.SU
 }
 async function createProspect({url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY,request=fetch,changes,allowDuplicate=false,retryCodeConflict=true}={}){
  if(!changes||typeof changes!=='object'||Array.isArray(changes))throw invalid('Informe os dados do cadastro.');
- const allowed=['nome','cnpj','segmento','cidade','uf','telefone','whatsapp','site','instagram','observacoes_contatos','produtos_publico','perfil_produtos','vende_bolsas_mochilas','situacao_comercial_axivel','perfil_revenda','enderecos'];
+ const allowed=['nome','cnpj','segmento','cidade','uf','telefone','whatsapp','site','instagram','observacoes_contatos','produtos_publico','perfil_produtos','vende_bolsas_mochilas','situacao_comercial_axivel','perfil_revenda','enderecos','origens','origem_detalhe'];
  if(Object.keys(changes).some(field=>!allowed.includes(field)))throw invalid('O pedido contém campos que não podem ser cadastrados.');
  const data=validateCompanyChanges({...changes,nome:changes.nome});
  const segments=['Bolsas e acessórios','Roupas multimarcas','Calçados','Bazares e variedades','Papelarias','Outros'];
